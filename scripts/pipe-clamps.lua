@@ -3,18 +3,18 @@ local Event = require('__stdlib__/stdlib/event/event')
 local clamped_name = {
     --1 =
     --2 =
-    [3] = '-clamped-ew',
+    [3] = '-clamped-EW',
     --4 =
-    [5] = '-clamped-nw',
-    [6] = '-clamped-ne',
-    [7] = '-clamped-new',
+    [5] = '-clamped-NW',
+    [6] = '-clamped-NE',
+    [7] = '-clamped-NEW',
     --8 =
-    [9] = '-clamped-sw',
-    [10] = '-clamped-se',
-    [11] = '-clamped-sew',
-    [12] = '-clamped-ns',
-    [13] = '-clamped-nsw',
-    [14] = '-clamped-nse'
+    [9] = '-clamped-SW',
+    [10] = '-clamped-SE',
+    [11] = '-clamped-SEW',
+    [12] = '-clamped-NS',
+    [13] = '-clamped-NSW',
+    [14] = '-clamped-NSE'
     --[15] = "-clamped-nsew",
 }
 
@@ -22,29 +22,51 @@ local yellow = defines.color.yellow
 local green = defines.color.green
 local red = defines.color.red
 
+local function getEW(deltaX)
+    if deltaX > 0 then
+        --west
+        return 1
+    end
+    if deltaX < 0 then
+        --east
+        return 2
+    end
+end
+
+local function getNS(deltaY)
+    if deltaY > 0 then
+        --north
+        return 4
+    end
+    if deltaY < 0 then
+        --south
+        return 8
+    end
+end
+
 local function clamp_pipe(entity, player)
     local table_entry = 0
     local neighbour_count = 0
     for _, entities in pairs(entity.neighbours) do
         for _, neighbour in pairs(entities) do
-            if (entity.position.x - neighbour.position.x) > 0 then
-                --west
-                table_entry = table_entry + 1
+            local deltaX = entity.position.x - neighbour.position.x
+            local deltaY = entity.position.y - neighbour.position.y
+            if deltaX ~= 0 and deltaY == 0 then
+                --game.print("It's a x difference")
+                table_entry = table_entry + getEW(deltaX)
                 neighbour_count = neighbour_count + 1
-            end
-            if (entity.position.x - neighbour.position.x) < 0 then
-                --east
-                table_entry = table_entry + 2
+            elseif deltaX == 0 and deltaY ~= 0 then
+                --game.print("It's a y difference")
+                table_entry = table_entry + getNS(deltaY)
                 neighbour_count = neighbour_count + 1
-            end
-            if (entity.position.y - neighbour.position.y) > 0 then
-                --north
-                table_entry = table_entry + 4
-                neighbour_count = neighbour_count + 1
-            end
-            if (entity.position.y - neighbour.position.y) < 0 then
-                --south
-                table_entry = table_entry + 8
+            elseif deltaX ~=0 and deltaY ~= 0 then
+                if math.abs(deltaX) > math.abs(deltaY) then
+                    --game.print("They're both different but x is larger")
+                    table_entry = table_entry + getEW(deltaX)
+                elseif math.abs(deltaX) < math.abs(deltaY) then
+                    --game.print("They're both different but y is larger")
+                    table_entry = table_entry + getNS(deltaY)
+                end
                 neighbour_count = neighbour_count + 1
             end
         end
