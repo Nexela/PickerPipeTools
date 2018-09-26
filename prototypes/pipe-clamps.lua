@@ -8,43 +8,43 @@ local west = {position = {-1, 0}}
 local east = {position = {1, 0}}
 
 local nameTable = {
-    ['ew'] = {
+    ['EW'] = {
         locale = '[East, West]',
         positions = {east, west}
     },
-    ['nw'] = {
+    ['NW'] = {
         locale = '[North, West]',
         positions = {north, west}
     },
-    ['ne'] = {
+    ['NE'] = {
         locale = '[North, East]',
         positions = {north, east}
     },
-    ['new'] = {
+    ['NEW'] = {
         locale = '[North, East, West]',
         positions = {north, east, west}
     },
-    ['sw'] = {
+    ['SW'] = {
         locale = '[South, West]',
         positions = {south, west}
     },
-    ['se'] = {
+    ['SE'] = {
         locale = '[South, East]',
         positions = {south, east}
     },
-    ['sew'] = {
+    ['SEW'] = {
         locale = '[South, East, West]',
         positions = {south, east, west}
     },
-    ['ns'] = {
+    ['NS'] = {
         locale = '[North, South]',
         positions = {north, south}
     },
-    ['nsw'] = {
+    ['NSW'] = {
         locale = '[North, South, West]',
         positions = {north, south, west}
     },
-    ['nse'] = {
+    ['NSE'] = {
         locale = '[North, South, East]',
         positions = {north, south, east}
     }
