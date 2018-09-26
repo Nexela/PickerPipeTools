@@ -23,25 +23,11 @@ local green = defines.color.green
 local red = defines.color.red
 
 local function getEW(deltaX)
-    if deltaX > 0 then
-        --west
-        return 1
-    end
-    if deltaX < 0 then
-        --east
-        return 2
-    end
+    return deltaX > 0 and 1 or 2
 end
 
 local function getNS(deltaY)
-    if deltaY > 0 then
-        --north
-        return 4
-    end
-    if deltaY < 0 then
-        --south
-        return 8
-    end
+    return deltaY > 0 and 4 or 8
 end
 
 local function clamp_pipe(entity, player)
@@ -52,19 +38,15 @@ local function clamp_pipe(entity, player)
             local deltaX = entity.position.x - neighbour.position.x
             local deltaY = entity.position.y - neighbour.position.y
             if deltaX ~= 0 and deltaY == 0 then
-                --game.print("It's a x difference")
                 table_entry = table_entry + getEW(deltaX)
                 neighbour_count = neighbour_count + 1
             elseif deltaX == 0 and deltaY ~= 0 then
-                --game.print("It's a y difference")
                 table_entry = table_entry + getNS(deltaY)
                 neighbour_count = neighbour_count + 1
             elseif deltaX ~=0 and deltaY ~= 0 then
                 if math.abs(deltaX) > math.abs(deltaY) then
-                    --game.print("They're both different but x is larger")
                     table_entry = table_entry + getEW(deltaX)
                 elseif math.abs(deltaX) < math.abs(deltaY) then
-                    --game.print("They're both different but y is larger")
                     table_entry = table_entry + getNS(deltaY)
                 end
                 neighbour_count = neighbour_count + 1
