@@ -4,7 +4,7 @@ if settings.startup['picker-tool-pipe-cleaner'].value then
     Data {
         type = 'selection-tool',
         name = 'picker-pipe-cleaner',
-        icon = '__PickerPipeTools__/graphics/pipe-cleaner.png',
+        icon = '__PickerPipeTools__/graphics/icons/pipe-cleaner.png',
         icon_size = 64,
         flags = {'hidden', 'only-in-cursor'},
         subgroup = 'tool',

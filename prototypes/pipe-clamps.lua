@@ -50,6 +50,77 @@ local nameTable = {
     }
 }
 
+local clamped_layer = {
+    --[[straight_vertical_single = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-straight-vertical-single.png"
+    },]]--
+    straight_vertical = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-straight-vertical.png"
+    },
+    straight_vertical_window = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-straight-vertical-window.png"
+    },
+    straight_horizontal_window = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-straight-horizontal-window.png"
+    },
+    straight_horizontal = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-straight-horizontal.png"
+    },
+    corner_up_right = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-corner-up-right.png"
+    },
+    corner_up_left = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-corner-up-left.png"
+    },
+    corner_down_right = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-corner-down-right.png"
+    },
+    corner_down_left = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-corner-down-left.png"
+    },
+    t_up = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-t-up.png"
+    },
+    t_down = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-t-down.png"
+    },
+    t_right = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-t-right.png"
+    },
+    t_left = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-t-left.png"
+    },
+    ending_up = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-ending-up.png"
+    },
+    ending_down = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-ending-down.png"
+    },
+    ending_right = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-ending-right.png"
+    },
+    ending_left = {
+        add_layer = true,
+        hr_image_path = "__PickerPipeTools__/graphics/pipe/hr-pipe-ending-left.png"
+    },
+}
+
 local ignore_pictures = {
     gas_flow = true,
     fluid_background = true,
@@ -59,6 +130,7 @@ local ignore_pictures = {
 
 local pipe_entities = {}
 for i, pipe in pairs(data.raw['pipe']) do
+    -- TODO Data.pairs()
     for name, pipe_data in pairs(nameTable) do
         if not pipe.clamped and not string.find(pipe.name, 'dummy%-') then
             local new_entity = table.deep_copy(pipe)
@@ -67,6 +139,7 @@ for i, pipe in pairs(data.raw['pipe']) do
             new_entity.clamped = true
             new_entity.localised_name = {'pipe-tools.clamped-name', pipe.name, pipe_data.locale}
             new_entity.placeable_by = {item = pipe.name, count = pipe.minable and pipe.minable.count or 1}
+            -- TODO get potential icon from icons[1]
             new_entity.icons = {
                 {
                     icon = new_entity.icon or data.raw['pipe']['pipe'].icon,
@@ -80,30 +153,31 @@ for i, pipe in pairs(data.raw['pipe']) do
             new_entity.flags = {'placeable-neutral', 'player-creation', 'fast-replaceable-no-build-while-moving'}
             new_entity.fluid_box.pipe_connections = table.deep_copy(pipe_data.positions)
 
-            for picture_name, _ in pairs(new_entity.pictures) do
-                if not ignore_pictures[picture_name] then
-                    local current_layer = new_entity.pictures[picture_name]
-                    new_entity.pictures[picture_name] = {
-                        layers = {
-                            current_layer,
-                            {
-                                filename = '__PickerPipeTools__/graphics/icons/lock.png',
-                                priority = 'extra-high',
-                                width = 32,
-                                height = 32,
-                                scale = 0.8,
-                                shift = util.by_pixel(0, -5),
-                                hr_version = {
-                                    filename = '__PickerPipeTools__/graphics/icons/hr-lock.png',
-                                    priority = 'extra-high',
-                                    width = 64,
-                                    height = 64,
-                                    scale = 0.4,
-                                    shift = util.by_pixel(0, -5)
+            for pictureName, _ in pairs(new_entity.pictures) do
+                if not ignore_pictures[pictureName] then
+                    if clamped_layer[pictureName] and clamped_layer[pictureName].add_layer then
+                        local currentLayerData = new_entity.pictures[pictureName]
+                        new_entity.pictures[pictureName] = {
+                            layers = {
+                                currentLayerData,
+                                {
+                                    filename = "__PickerPipeTools__/graphics/icons/lock.png",
+                                    priority = "extra-high",
+                                    width = 32,
+                                    height = 32,
+                                    scale = 0.8,
+                                    shift = util.by_pixel(0, -5),
+                                    hr_version = {
+                                        filename = clamped_layer[pictureName].hr_image_path,
+                                        priority = "extra-high",
+                                        width = 128,
+                                        height = 128,
+                                        scale = 0.5,
+                                    }
                                 }
                             }
                         }
-                    }
+                    end
                 end
             end
             pipe_entities[#pipe_entities + 1] = new_entity
