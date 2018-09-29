@@ -22,6 +22,14 @@ local yellow = defines.color.yellow
 local green = defines.color.green
 local red = defines.color.red
 
+local ignore_pipes = {}
+local function load_pipe_connections()
+    if remote.interfaces['underground-pipe-pack'] then
+        ignore_pipes = remote.call('underground-pipe-pack', 'get_ignored_pipes')
+    end
+end
+Event.register({Event.core_events.init, Event.core_events.load}, load_pipe_connections)
+
 local function getEW(deltaX)
     return deltaX > 0 and 1 or 2
 end
@@ -104,7 +112,7 @@ local function toggle_pipe_clamp(event)
     local selection = player.selected
     if selection and selection.type == 'pipe' and selection.force == player.force then
         local clamped = string.find(selection.name, '%-clamped%-')
-        if not clamped and selection.name ~= '4-to-4-pipe' then
+        if not clamped and not ignore_pipes[selection.name] then
             clamp_pipe(selection, player)
         elseif clamped then
             un_clamp_pipe(selection, player)
@@ -120,7 +128,7 @@ local function toggle_area_clamp(event)
         for _, entity in pairs(event.entities) do
             if entity.type == 'pipe' then
                 local clamped = string.find(entity.name, '%-clamped%-')
-                if clamp and not clamped and entity.name ~= '4-to-4-pipe' then
+                if clamp and not clamped and not ignore_pipes[entity.name] then
                     clamp_pipe(entity, player)
                 elseif not clamp and clamped then
                     un_clamp_pipe(entity, player)

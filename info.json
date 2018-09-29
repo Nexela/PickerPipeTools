@@ -9,7 +9,7 @@
     "base >= 0.17.0",
     "stdlib >= 1.0.0",
     "PickerAtheneum >= 1.0.0",
-    "! underground-pipe-pack"
+    "(?) underground-pipe-pack"
   ],
   "homepage": "",
   "description": "Adds new functionality to pipes"

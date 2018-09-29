@@ -20,7 +20,7 @@ local ugs = {
 }
 
 local function _find_mark(entity)
-    return entity.surface.find_entity('picker-marker-box-red', entity.position)
+    return entity.surface.find_entity('picker-highlight-box', entity.position)
 end
 
 local function _destroy_mark(entity)
@@ -42,8 +42,16 @@ local function find_orphans(event)
                 local not_con = not entity.neighbours or (entity.neighbours and not entity.neighbours.type and #entity.neighbours[1] < 2)
 
                 if not_con and not _find_mark(entity) then
-                    --game.print('no marks')
-                    entity.surface.create_entity {name = 'picker-marker-box-red', position = entity.position, force = player.force}
+                    entity.surface.create_entity {
+                        name = 'picker-highlight-box',
+                        target = entity,
+                        render_player_index = 1,
+                        position = entity.position,
+                        box_type = 'not-allowed',
+                        force = player.force,
+                        time_to_live = 60 * 10,
+                        blink_interval = 30
+                    }
                 end
             end
             pdata['next_check_' .. etype] = event.tick + (defines.time.second * 10)
