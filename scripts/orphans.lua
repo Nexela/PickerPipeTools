@@ -3,9 +3,9 @@
 -------------------------------------------------------------------------------
 -- Code modified from GotLag's Orphan Finder: https://mods.factorio.com/mods/GotLag/Orphan%20Finder
 
-local Event = require('__stdlib__/stdlib/event/event')
-local Player = require('__stdlib__/stdlib/event/player')
-local Position = require('__stdlib__/stdlib/area/position')
+local Event = require('lib/event')
+local Player = require('lib/player')
+local Position = require('lib/position')
 
 local types = {
     ['underground-belt'] = 'underground-belt',
@@ -20,7 +20,7 @@ local ugs = {
 }
 
 local function _find_mark(entity)
-    return entity.surface.find_entity('picker-highlight-box', entity.position)
+    return entity.surface.find_entity('picker-pipe-marker-box-bad', entity.position)
 end
 
 local function _destroy_mark(entity)
@@ -43,18 +43,13 @@ local function find_orphans(event)
 
                 if not_con and not _find_mark(entity) then
                     entity.surface.create_entity {
-                        name = 'picker-highlight-box',
-                        target = entity,
-                        render_player_index = 1,
+                        name = 'picker-pipe-marker-box-bad',
                         position = entity.position,
-                        box_type = 'not-allowed',
                         force = player.force,
-                        time_to_live = 60 * 10,
-                        blink_interval = 30
                     }
                 end
             end
-            pdata['next_check_' .. etype] = event.tick + (defines.time.second * 10)
+            pdata['next_check_' .. etype] = event.tick + (60 * 10)
         end
     end
 end
@@ -74,7 +69,7 @@ local function orphan_builder(event)
         else
             _destroy_mark(ents)
         end
-        pdata._next_check = event.tick + (defines.time.second * 2)
+        pdata._next_check = event.tick + (60 * 2)
     end
 end
 Event.register(defines.events.on_built_entity, orphan_builder)

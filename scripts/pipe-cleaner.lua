@@ -2,15 +2,15 @@
 --[[Pipe Cleaner]] --
 -------------------------------------------------------------------------------
 --Loosley based on pipe manager by KeyboardHack
-local Event = require('__stdlib__/stdlib/event/event')
-local table = require('__stdlib__/stdlib/utils/table')
+local Event = require('lib/event')
+local table = require('lib/table')
 
 --Start at a drain and clear fluidboxes out that match. find drain connections not cleaned and repeat
 local function call_a_plumber(event)
     if event.item == 'picker-pipe-cleaner' then
         local plumber = game.players[event.player_index]
         --TODO alt_selected_area, other fluid lines
-        if plumber.admin or not settings.global['picker-tool-admin-only'].value then
+        if plumber.admin or (settings.global['picker-tool-admin-only'] and not settings.global['picker-tool-admin-only'].value) then
             if event.name == defines.events.on_player_selected_area or event.name == defines.events.on_player_alt_selected_area then
                 local clog
                 local rootered = {}
@@ -55,7 +55,7 @@ local function call_a_plumber(event)
                 end
             end
         else
-            plumber.print({'picker.must-be-admin'})
+            plumber.print('Must be an admin to use this tool.')
         end
     end
 end

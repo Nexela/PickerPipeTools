@@ -12,12 +12,5 @@ data:extend{
         setting_type = 'startup',
         default_value = true,
         order = 'tool-pipe-cleaner'
-    },
-    {
-        type = 'bool-setting',
-        name = 'picker-pipe-cleaner-admin',
-        setting_type = 'runtime-global',
-        default_value = true,
-        order = 'picker[admin]'
     }
 }

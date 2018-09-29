@@ -1,4 +1,4 @@
-local Event = require('__stdlib__/stdlib/event/event')
+local Event = require('lib/event')
 
 local clamped_name = {
     --1 =
@@ -18,9 +18,9 @@ local clamped_name = {
     --[15] = "-clamped-nsew",
 }
 
-local yellow = defines.color.yellow
-local green = defines.color.green
-local red = defines.color.red
+local yellow = {r = 1, g = 1}
+local green = {g = 1}
+local red = {r = 1}
 
 local ignore_pipes = {}
 local function load_pipe_connections()
@@ -51,7 +51,7 @@ local function clamp_pipe(entity, player)
             elseif deltaX == 0 and deltaY ~= 0 then
                 table_entry = table_entry + getNS(deltaY)
                 neighbour_count = neighbour_count + 1
-            elseif deltaX ~=0 and deltaY ~= 0 then
+            elseif deltaX ~= 0 and deltaY ~= 0 then
                 if math.abs(deltaX) > math.abs(deltaY) then
                     table_entry = table_entry + getEW(deltaX)
                 elseif math.abs(deltaX) < math.abs(deltaY) then
@@ -63,24 +63,27 @@ local function clamp_pipe(entity, player)
     end
     local pos = entity.position
     if neighbour_count > 1 and table_entry < 15 then
-        entity.surface.create_entity {
-                name = entity.name .. clamped_name[table_entry],
-                position = pos,
-                force = entity.force,
-                fast_replace = true,
-                player = player.index,
-                spill = false
-            }.last_user = player
-        player.create_local_flying_text {
+        local new =
+            entity.surface.create_entity {
+            name = entity.name .. clamped_name[table_entry],
+            position = pos,
+            force = entity.force,
+            fast_replace = true,
+            spill = false
+        }
+        new.surface.create_entity {
+            name = 'flying-text',
             position = pos,
             text = {'pipe-tools.clamped'},
             color = green
         }
+        new.last_user = player
         if entity then
             entity.destroy()
         end
     else
-        player.create_local_flying_text {
+        entity.surface.create_entity {
+            name = 'flying-text',
             position = pos,
             text = {'pipe-tools.fail'},
             color = red
@@ -90,18 +93,21 @@ end
 
 local function un_clamp_pipe(entity, player)
     local pos = entity.position
-    entity.surface.create_entity {
-            name = entity.prototype.mineable_properties.products[1].name,
-            position = pos,
-            force = entity.force,
-            fast_replace = true,
-            spill = false
-        }.last_user = player
-    player.create_local_flying_text {
+    local new =
+        entity.surface.create_entity {
+        name = entity.prototype.mineable_properties.products[1].name,
+        position = pos,
+        force = entity.force,
+        fast_replace = true,
+        spill = false
+    }
+    new.surface.create_entity {
+        name = 'flying-text',
         position = pos,
         text = {'pipe-tools.unclamped'},
         color = yellow
     }
+    new.last_user = player
     if entity then
         entity.destroy()
     end

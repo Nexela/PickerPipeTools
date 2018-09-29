@@ -1,21 +1,78 @@
-local Data = require('__stdlib__/stdlib/data/data')
-
-local pipe = Data('wall-remnants', 'corpse'):copy('picker-underground-marker-horizontal'):set_fields {
-    icon = '__PickerPipeTools__/graphics/underground-lines-single-horizontal.png',
-    time_before_removed = 60 * 10,
-    collision_box = {{0, 0}, {0, 0}},
-    final_render_layer = 'selection-box',
-    animation = {
-        width = 64,
-        height = 64,
-        frame_count = 1,
-        direction_count = 1,
-        scale = 0.5,
-        filename = '__PickerPipeTools__/graphics/underground-lines-single-horizontal.png'
+data:extend {
+    util.merge {
+        data.raw['corpse']['wall-remnants'],
+        {
+            name = 'picker-pipe-marker-box-good',
+            icon = '__PickerPipeTools__/graphics/entity/markers/32x32highlighter.png',
+            time_before_removed = 60 * 20,
+            collision_box = {{0, 0}, {0, 0}},
+            final_render_layer = 'selection-box',
+            animation = {
+                width = 64,
+                height = 64,
+                frame_count = 1,
+                direction_count = 1,
+                scale = 0.5,
+                shift = {-0.5, -0.5},
+                filename = '__PickerPipeTools__/graphics/entity/markers/32x32highlighter.png'
+            }
+        }
+    },
+    util.merge {
+        data.raw['corpse']['wall-remnants'],
+        {
+            name = 'picker-pipe-marker-box-bad',
+            icon = '__PickerPipeTools__/graphics/entity/markers/32x32highlighterbad.png',
+            time_before_removed = 60 * 20,
+            collision_box = {{0, 0}, {0, 0}},
+            final_render_layer = 'selection-box',
+            animation = {
+                width = 64,
+                height = 64,
+                frame_count = 1,
+                direction_count = 1,
+                scale = 0.5,
+                shift = {-0.5, -0.5},
+                filename = '__PickerPipeTools__/graphics/entity/markers/32x32highlighterbad.png'
+            }
+        }
+    },
+    util.merge {
+        data.raw['corpse']['wall-remnants'],
+        {
+            name = 'picker-underground-pipe-marker-horizontal',
+            icon = '__PickerPipeTools__/graphics/entity/markers/underground-lines-single-horizontal.png',
+            time_before_removed = 60 * 20,
+            collision_box = {{0, 0}, {0, 0}},
+            final_render_layer = 'selection-box',
+            animation = {
+                width = 64,
+                height = 64,
+                frame_count = 1,
+                direction_count = 1,
+                scale = 0.5,
+                shift = {-0.5, -0.5},
+                filename = '__PickerPipeTools__/graphics/entity/markers/underground-lines-single-horizontal.png'
+            }
+        }
+    },
+    util.merge {
+        data.raw['corpse']['wall-remnants'],
+        {
+            name = 'picker-underground-pipe-marker-vertical',
+            icon = '__PickerPipeTools__/graphics/entity/markers/underground-lines-single-vertical.png',
+            time_before_removed = 60 * 20,
+            collision_box = {{0, 0}, {0, 0}},
+            final_render_layer = 'selection-box',
+            animation = {
+                width = 64,
+                height = 64,
+                frame_count = 1,
+                direction_count = 1,
+                scale = 0.5,
+                shift = {-0.5, -0.5},
+                filename = '__PickerPipeTools__/graphics/entity/markers/underground-lines-single-vertical.png'
+            }
+        }
     }
 }
-pipe:Flags():add{'placeable-off-grid', 'not-repairable', 'not-on-map', 'not-blueprintable', 'not-deconstructable'}:remove('placeable-neutral')
-
-local ver = pipe:copy('picker-underground-marker-vertical')
-ver.animation.filename = '__PickerPipeTools__/graphics/underground-lines-single-vertical.png'
-ver.icon = '__PickerPipeTools__/graphics/underground-lines-single-vertical.png'

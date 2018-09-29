@@ -1,15 +1,13 @@
 {
   "name": "PickerPipeTools",
-  "version": "1.0.0",
-  "factorio_version": "0.17",
+  "version": "0.1.0",
+  "factorio_version": "0.16",
   "title": "Picker Pipe Tools",
   "author": "TheStaplergun, Nexela",
   "contact": "TheStaplergun 2.0#6920 (DISCORD)",
   "dependencies": [
-    "base >= 0.17.0",
-    "stdlib >= 1.0.0",
-    "PickerAtheneum >= 1.0.0",
-    "(?) underground-pipe-pack"
+    "base >= 0.16.51",
+    "? underground-pipe-pack"
   ],
   "homepage": "",
   "description": "Adds new functionality to pipes"
