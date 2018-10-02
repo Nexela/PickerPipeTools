@@ -2,7 +2,7 @@ local Event = require('lib/event')
 local Player = require('lib/player')
 
 local clamped_name = {
-    [0] = "-clamped",
+    [0] = "-clamped-none",
     [1] = "-clamped-W",
     [2] = "-clamped-E",
     [3] = "-clamped-EW",
@@ -219,16 +219,90 @@ local function pipe_failsafe_clamp(event)
     end
 end
 
+local function get_opposite_direction(direction)
+    if direction == 1 then
+        return 2
+    elseif direction == 2 then
+        return 1
+    elseif direction == 4 then
+        return 8
+    elseif direction == 8 then
+        return 4
+    end
+end
+
+local current_pipe_table =
+{
+    ["-clamped-none"] = {
+        directions = {0},
+    },
+    ["-clamped-W"] = {
+        directions = {1},
+    },
+    ["-clamped-E"] = {
+        directions = {2},
+    },
+    ["-clamped-EW"] = {
+        directions = {1, 2},
+    },
+    ["-clamped-N"] = {
+        directions = {4},
+    },
+    ["-clamped-NW"] = {
+        directions = {1, 4},
+    },
+    ["-clamped-NE"] = {
+        directions = {2, 4},
+    },
+    ["-clamped-NEW"] = {
+        directions = {1, 2, 4},
+    },
+    ["-clamped-S"] = {
+        directions = {8},
+    },
+    ["-clamped-SW"] = {
+        directions = {1, 8},
+    },
+    ["-clamped-SE"] = {
+        directions = {2, 8},
+    },
+    ["-clamped-SEW"] = {
+        directions = {1, 2, 8},
+    },
+    ["-clamped-NS"] = {
+        directions = {4, 8},
+    },
+    ["-clamped-NSW"] = {
+        directions = {1, 4, 8},
+    },
+    ["-clamped-NSE"] = {
+        directions = {2, 4, 8},
+    },
+    ["-clamped-NSEW"] = {
+        directions = {1, 2, 4, 8},
+    },
+}
+
+local function get_current_pipe(name, direction)
+    for names, directions in pairs(current_pipe_table) do
+        if string.find(name, names) then
+            if directions[direction] then
+                return true, nil
+            else
+
+end
+
 local function controlled_pipe_placement(event)
-    local player, pdata = Player.get(event.player_index)
+    local player , pdata = Player.get(event.player_index)
     if not pdata.controlled_mode then
         return
     end
     local entity = event.created_entity
-    if pdata.last_placed_pipe then
+    if pdata and pdata.last_placed_pipe then
         local last_entity = pdata.last_placed_pipe
         if get_distance(entity, last_entity) == 1 then
             local direction_from_current = get_direction(entity, last_entity)
+            local reverse_direction = get_opposite_direction(direction_from_current)
 
         else
             local new_pipe = place_clamped_pipe(entity, 0, player)
