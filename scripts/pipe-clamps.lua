@@ -1,4 +1,5 @@
 local Event = require('lib/event')
+local Player = require('lib/player')
 
 local clamped_name = {
     [0] = "-clamped",
@@ -219,23 +220,23 @@ local function pipe_failsafe_clamp(event)
 end
 
 local function controlled_pipe_placement(event)
-    local player = game.players[event.player_index]
-    if not global[player].controlled_mode then
+    local player, pdata = Player.get(event.player_index)
+    if not pdata.controlled_mode then
         return
     end
     local entity = event.created_entity
-    if global[player] and global[player].last_placed_pipe then
-        local last_entity = global[player].last_placed_pipe
+    if pdata.last_placed_pipe then
+        local last_entity = pdata.last_placed_pipe
         if get_distance(entity, last_entity) == 1 then
             local direction_from_current = get_direction(entity, last_entity)
 
         else
             local new_pipe = place_clamped_pipe(entity, 0, player)
-            global[player].last_placed_pipe = new_pipe
+            pdata.last_placed_pipe = new_pipe
         end
     else
         local new_pipe = place_clamped_pipe(entity, 0, player)
-        global[player].last_placed_pipe = new_pipe
+        pdata.last_placed_pipe = new_pipe
     end
 end
 
@@ -272,22 +273,15 @@ local function toggle_area_clamp(event)
 end
 Event.register({defines.events.on_player_selected_area, defines.events.on_player_alt_selected_area}, toggle_area_clamp)
 
-script.on_event(defines.events.on_built_entity, function(event)
-    local player = game.players[event.player_index]
+
+local function on_built_entity(event)
     if event.created_entity and event.created_entity.type == 'pipe' then
-        if global[player].controlled_mode then
+        local _, pdata = Player.get(event.player_index)
+        if pdata.controlled_mode then
             controlled_pipe_placement(event)
         else
             pipe_failsafe_clamp(event)
         end
     end
-end)
-
-
-script.on_event(defines.events.on_player_joined_game, function(player_index)
-    local player = game.players[player_index]
-    global[player] = global[player] or {
-        controlled_mode = false,
-        last_placed_pipe = {}
-    }
-end)
+end
+Event.register(defines.events.on_built_entity, on_built_entity)
