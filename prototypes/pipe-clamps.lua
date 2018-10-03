@@ -4,6 +4,10 @@ local west = {position = {-1, 0}}
 local east = {position = {1, 0}}
 
 local nameTable = {
+    ["none"] = {
+        locale = "[none]",
+        positions = {},
+    },
     ["E"] = {
         locale = "[East]",
         positions = {east},
@@ -26,11 +30,11 @@ local nameTable = {
         layers_to_keep = {
             straight_horizontal_window = {
                 keep = true,
-                hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-straight-horizontal-window.png"
+                hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-straight-horizontal-window.png"
             },
             straight_horizontal = {
                 keep = true,
-                hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-straight-horizontal.png"
+                hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-straight-horizontal.png"
             },
         }
     },
@@ -40,7 +44,7 @@ local nameTable = {
         layers_to_keep = {
             corner_up_left = {
                 keep = true,
-                hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-corner-up-left.png"
+                hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-corner-up-left.png"
             },
         }
     },
@@ -50,7 +54,7 @@ local nameTable = {
         layers_to_keep = {
             corner_up_right = {
                 keep = true,
-                hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-corner-up-right.png"
+                hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-corner-up-right.png"
             },
         }
     },
@@ -60,7 +64,7 @@ local nameTable = {
         layers_to_keep = {
             t_up = {
                 keep = true,
-                hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-t-up.png"
+                hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-t-up.png"
             },
         }
     },
@@ -70,7 +74,7 @@ local nameTable = {
         layers_to_keep = {
             corner_up_left = {
                 keep = true,
-                hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-corner-up-left.png"
+                hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-corner-up-left.png"
             },
         }
     },
@@ -80,7 +84,7 @@ local nameTable = {
         layers_to_keep = {
             corner_down_right = {
                 keep = true,
-                hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-corner-down-right.png"
+                hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-corner-down-right.png"
             },
         }
     },
@@ -90,7 +94,7 @@ local nameTable = {
         layers_to_keep = {
             t_down = {
                 keep = true,
-                hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-t-down.png"
+                hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-t-down.png"
             },
         }
     },
@@ -100,11 +104,11 @@ local nameTable = {
         layers_to_keep = {
             straight_vertical_window = {
                 keep = true,
-                hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-straight-vertical-window.png"
+                hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-straight-vertical-window.png"
             },
             straight_vertical = {
                 keep = true,
-                hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-straight-vertical.png"
+                hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-straight-vertical.png"
             },
         }
     },
@@ -114,7 +118,7 @@ local nameTable = {
         layers_to_keep = {
             t_left = {
                 keep = true,
-                hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-t-left.png"
+                hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-t-left.png"
             },
         }
     },
@@ -124,7 +128,7 @@ local nameTable = {
         layers_to_keep = {
             t_right = {
                 keep = true,
-                hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-t-right.png"
+                hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-t-right.png"
             },
         }
     },
@@ -134,7 +138,7 @@ local nameTable = {
         layers_to_keep = {
             t_right = {
                 keep = true,
-                hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-cross.png"
+                hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-cross.png"
             },
         }
     }
@@ -143,75 +147,75 @@ local nameTable = {
 local clamped_layer = {
     straight_vertical_single = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-straight-vertical-single.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-straight-vertical-single.png"
     },
     straight_vertical = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-straight-vertical.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-straight-vertical.png"
     },
     straight_vertical_window = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-straight-vertical-window.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-straight-vertical-window.png"
     },
     straight_horizontal_window = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-straight-horizontal-window.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-straight-horizontal-window.png"
     },
     straight_horizontal = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-straight-horizontal.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-straight-horizontal.png"
     },
     corner_up_right = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-corner-up-right.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-corner-up-right.png"
     },
     corner_up_left = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-corner-up-left.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-corner-up-left.png"
     },
     corner_down_right = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-corner-down-right.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-corner-down-right.png"
     },
     corner_down_left = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-corner-down-left.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-corner-down-left.png"
     },
     t_up = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-t-up.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-t-up.png"
     },
     t_down = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-t-down.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-t-down.png"
     },
     t_right = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-t-right.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-t-right.png"
     },
     t_left = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-t-left.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-t-left.png"
     },
     ending_up = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-ending-up.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-ending-up.png"
     },
     ending_down = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-ending-down.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-ending-down.png"
     },
     ending_right = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-ending-right.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-ending-right.png"
     },
     ending_left = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-ending-left.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-ending-left.png"
     },
     cross = {
         add_layer = true,
-        hr_image_path = "__clamp-tool__/graphics/entities/pipe/hr-pipe-cross.png"
+        hr_image_path = "__PickerPipeTools__/graphics/entity/pipe/hr-pipe-cross.png"
     },
 }
 local dontChange = {
@@ -232,7 +236,7 @@ local function create_picture_table(data, name)
                     layers = {
                         currentLayerData,
                         {
-                            filename = "__clamp-tool__/graphics/icons/lock.png",
+                            filename = "__PickerPipeTools__/graphics/icons/lock.png",
                             priority = "extra-high",
                             width = 32,
                             height = 32,
@@ -261,7 +265,7 @@ local function create_picture_table(data, name)
                     layers = {
                         currentLayerData,
                         {
-                            filename = "__clamp-tool__/graphics/icons/lock.png",
+                            filename = "__PickerPipeTools__/graphics/icons/lock.png",
                             priority = "extra-high",
                             width = 32,
                             height = 32,
@@ -292,7 +296,7 @@ for i, pipe in pairs(data.raw["pipe"]) do
 
             currentEntity.name = pipe.name .. "-clamped-" .. name
             currentEntity.clamped = true
-            currentEntity.localised_name = {"advanced-pipe.clamped-name", pipe.name, pipeData.locale}
+            currentEntity.localised_name = {"pipe-tools.clamped-name", pipe.name, pipeData.locale}
             currentEntity.placeable_by = {item = pipe.name, count = pipe.minable and pipe.minable.count or 1}
             currentEntity.icons = {
                 {
@@ -300,7 +304,7 @@ for i, pipe in pairs(data.raw["pipe"]) do
                     icon_size = 32
                 },
                 {
-                    icon = "__clamp-tool__/graphics/icons/lock.png",
+                    icon = "__PickerPipeTools__/graphics/icons/lock.png",
                     icon_size = 32
                 }
             }
@@ -317,7 +321,7 @@ for i, pipe in pairs(data.raw["pipe"]) do
                             layers = {
                                 currentLayerData,
                                 {
-                                    filename = "__clamp-tool__/graphics/icons/lock.png",
+                                    filename = "__PickerPipeTools__/graphics/icons/lock.png",
                                     priority = "extra-high",
                                     width = 32,
                                     height = 32,

@@ -2,22 +2,22 @@ local Event = require('lib/event')
 local Player = require('lib/player')
 
 local clamped_name = {
-    [0] = "-clamped-none",
-    [1] = "-clamped-W",
-    [2] = "-clamped-E",
-    [3] = "-clamped-EW",
-    [4] = "-clamped-N",
-    [5] = "-clamped-NW",
-    [6] = "-clamped-NE",
-    [7] = "-clamped-NEW",
-    [8] = "-clamped-S",
-    [9] = "-clamped-SW",
-    [10] = "-clamped-SE",
-    [11] = "-clamped-SEW",
-    [12] = "-clamped-NS",
-    [13] = "-clamped-NSW",
-    [14] = "-clamped-NSE",
-    [15] = "-clamped-NSEW",
+    [1] = "-clamped-none",
+    [2] = "-clamped-W",
+    [3] = "-clamped-E",
+    [4] = "-clamped-EW",
+    [5] = "-clamped-N",
+    [6] = "-clamped-NW",
+    [7] = "-clamped-NE",
+    [8] = "-clamped-NEW",
+    [9] = "-clamped-S",
+    [10] = "-clamped-SW",
+    [11] = "-clamped-SE",
+    [12] = "-clamped-SEW",
+    [13] = "-clamped-NS",
+    [14] = "-clamped-NSW",
+    [15] = "-clamped-NSE",
+    [16] = "-clamped-NSEW",
 }
 
 local yellow = {r = 1, g = 1}
@@ -43,9 +43,10 @@ end
 local function place_clamped_pipe(entity, table_entry, player, lock_pipe)
     local entity_position = entity.position
     local new
-    if table_entry <= 15 and clamped_name[table_entry] then
+    table_entry = (table_entry or 0) + 1
+    if table_entry <= 16 and clamped_name[table_entry] then
         new = entity.surface.create_entity {
-            name = entity.name .. clamped_name[table_entry],
+            name = entity.prototype.mineable_properties.products[1].name .. clamped_name[table_entry],
             position = entity_position,
             force = entity.force,
             fast_replace = true,
@@ -283,15 +284,29 @@ local current_pipe_table =
     },
 }
 
-local function get_current_pipe(name, direction)
+local function get_new_pipe(name, direction)
     for names, directions in pairs(current_pipe_table) do
         if string.find(name, names) then
-            if directions[direction] then
-                return true, nil
+            if directions[direction] and not directions ~= {0} then
+                local adder
+                for number in directions do
+                    adder = adder + number
+                end
+                game.print("New pipe is already connected" .. adder)
+                return adder
             else
-
+                local adder
+                for number in directions do
+                    adder = adder + number
+                end
+                adder = adder + direction
+                game.print("new pipe is adding connection as" .. adder)
+                return adder
+            end
+        end
+    end
 end
-
+--Still fixing this area
 local function controlled_pipe_placement(event)
     local player , pdata = Player.get(event.player_index)
     if not pdata.controlled_mode then
@@ -299,20 +314,39 @@ local function controlled_pipe_placement(event)
     end
     local entity = event.created_entity
     if pdata and pdata.last_placed_pipe then
-        local last_entity = pdata.last_placed_pipe
+        local last_entity = (player.surface.find_entities_filtered{position = pdata.last_placed_pipe, type = 'pipe'})[1]
         if get_distance(entity, last_entity) == 1 then
             local direction_from_current = get_direction(entity, last_entity)
             local reverse_direction = get_opposite_direction(direction_from_current)
-
+            local current_new_pipe = get_new_pipe(entity.name, direction_from_current)
+            local previous_new_pipe = get_new_pipe(last_entity.name, reverse_direction)
+            game.print(previous_new_pipe .. " is the previous new pipe")
+            local new_pipe = place_clamped_pipe(entity, current_new_pipe, player)
+            pdata.last_placed_pipe = new_pipe.position
+            place_clamped_pipe(last_entity, previous_new_pipe, player)
         else
             local new_pipe = place_clamped_pipe(entity, 0, player)
-            pdata.last_placed_pipe = new_pipe
+            pdata.last_placed_pipe = new_pipe.position
         end
     else
         local new_pipe = place_clamped_pipe(entity, 0, player)
-        pdata.last_placed_pipe = new_pipe
+        pdata.last_placed_pipe = new_pipe.position
     end
 end
+
+
+
+local function controlled_pipe_placement_toggle(event)
+    local player , pdata = Player.get(event.player_index)
+    if pdata.controlled_mode then
+        pdata.controlled_mode = false
+        player.print("Controlled mode off")
+    else
+        pdata.controlled_mode = true
+        player.print("Controlled mode on")
+    end
+end
+Event.register('picker-controlled-pipe-toggle', controlled_pipe_placement_toggle)
 
 local function toggle_pipe_clamp(event)
     local player = game.players[event.player_index]
