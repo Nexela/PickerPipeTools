@@ -14,7 +14,7 @@ data:extend{
     },
     {
         type = "custom-input",
-        name = "picker-controlled-pipe-toggle",
+        name = "picker-auto-clamp-toggle",
         key_sequence = "CONTROL + SHIFT + ALT + C",
         --linked_game_control = 'rotate',
         consuming = "script-only"
