@@ -1,4 +1,4 @@
-data:extend{
+data:extend {
     {
         type = 'custom-input',
         name = 'picker-show-underground-paths',
@@ -6,12 +6,17 @@ data:extend{
         consuming = 'script-only'
     },
     {
-        type = "custom-input",
-        name = "picker-toggle-pipe-clamp",
-        key_sequence = "CONTROL + SHIFT + ALT + PAD 0",
+        type = 'custom-input',
+        name = 'picker-toggle-pipe-clamp',
+        key_sequence = 'CONTROL + SHIFT + ALT + PAD 0',
         linked_game_control = 'rotate',
-        consuming = "script-only"
-      }
+        consuming = 'script-only'
+    },
+    {
+        type = 'custom-input',
+        name = 'picker-pipe-filter',
+        key_sequence = 'CONTROL + F'
+    }
 }
 
 require('prototypes/pipe-highlight')

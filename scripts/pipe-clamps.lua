@@ -67,7 +67,7 @@ local function clamp_pipe(entity, player)
                 name = entity.name .. clamped_name[table_entry],
                 position = pos,
                 force = entity.force,
-                fast_replace = true,
+                fast_replace = true, -- TODO filters are not fast replaced
                 player = player.index,
                 spill = false
             }.last_user = player
