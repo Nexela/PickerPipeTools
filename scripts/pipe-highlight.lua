@@ -1,3 +1,8 @@
+-------------------------------------------------------------------------------
+--[[Pipe Highlighter]] --
+-------------------------------------------------------------------------------
+-- Concept designed and code written by TheStaplergun (staplergun on mod portal) revised by Nexela
+
 local Event = require('lib/event')
 
 local pipe_connections = {}

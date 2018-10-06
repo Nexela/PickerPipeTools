@@ -1,3 +1,8 @@
+-------------------------------------------------------------------------------
+--[[Pipe Clamps]] --
+-------------------------------------------------------------------------------
+-- Concept designed and code written by TheStaplergun (staplergun on mod portal)
+
 local Event = require('lib/event')
 local Player = require('lib/player')
 
