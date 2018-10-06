@@ -1,23 +1,29 @@
 local Event = require('lib/event')
 local Player = require('lib/player')
 
+--[[defines.direction.north     == 0    1
+defines.direction.east     == 2         4
+defines.direction.south     == 4        16
+defines.direction.west     == 6         64
+]]
+
 local clamped_name = {
     --[1] = "-clamped-none",
-    [1] = "-clamped-W",
-    [2] = "-clamped-E",
-    [3] = "-clamped-EW",
-    [4] = "-clamped-N",
-    [5] = "-clamped-NW",
-    [6] = "-clamped-NE",
-    [7] = "-clamped-NEW",
-    [8] = "-clamped-S",
-    [9] = "-clamped-SW",
-    [10] = "-clamped-SE",
-    [11] = "-clamped-SEW",
-    [12] = "-clamped-NS",
-    [13] = "-clamped-NSW",
-    [14] = "-clamped-NSE",
-    [15] = "-clamped-NSEW",
+    [1] = "-clamped-N",
+    [4] = "-clamped-E",
+    [5] = "-clamped-NE",
+    [16] = "-clamped-S",
+    [17] = "-clamped-NS",
+    [20] = "-clamped-SE",
+    [21] = "-clamped-NSE",
+    [64] = "-clamped-W",
+    [65] = "-clamped-NW",
+    [68] = "-clamped-EW",
+    [69] = "-clamped-NEW",
+    [80] = "-clamped-SW",
+    [81] = "-clamped-NSW",
+    [84] = "-clamped-SEW",
+    [85] = "-clamped-NSEW",
 }
 
 local yellow = {r = 1, g = 1}
@@ -33,11 +39,11 @@ end
 Event.register({Event.core_events.init, Event.core_events.load}, load_pipe_connections)
 
 local function getEW(deltaX)
-    return deltaX > 0 and 1 or 2
+    return deltaX > 0 and defines.direction.west or defines.direction.east
 end
 
 local function getNS(deltaY)
-    return deltaY > 0 and 4 or 8
+    return deltaY > 0 and defines.direction.north or defines.direction.south
 end
 
 local function get_pipe(player_index)
@@ -49,7 +55,7 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, failsa
     --local player, pdata = Player.get(player.index)
     local entity_position = entity.position
     local new
-    if table_entry <= 15 and clamped_name[table_entry] then
+    if table_entry <= 85 and clamped_name[table_entry] then
         new = entity.surface.create_entity {
             name = entity.prototype.mineable_properties.products[1].name .. clamped_name[table_entry],
             position = entity_position,
@@ -57,16 +63,7 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, failsa
             fast_replace = true,
             spill = false
         }
-        if not failsafe then
-            new.surface.create_entity {
-                name = 'flying-text',
-                position = entity_position,
-                text = {'advanced-pipe.clamped'},
-                time_to_live = 60,
-                speed = 1/60,
-                color = green
-            }
-        elseif failsafe then
+        if failsafe then
             new.surface.create_entity {
                 name = 'flying-text',
                 position = entity_position,
@@ -74,6 +71,15 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, failsa
                 time_to_live = 60,
                 speed = 1/60,
                 color = yellow
+            }
+        else
+            new.surface.create_entity {
+                name = 'flying-text',
+                position = entity_position,
+                text = {'advanced-pipe.clamped'},
+                time_to_live = 60,
+                speed = 1/60,
+                color = green
             }
         end
         new.last_user = player
@@ -100,17 +106,17 @@ local function get_direction(entity, neighbour)
     local deltaY = entity.position.y - neighbour.position.y
     if deltaX ~= 0 and deltaY == 0 then
         --game.print("It's a x difference")
-        table_entry = table_entry + getEW(deltaX)
+        table_entry = table_entry + 2^(getEW(deltaX))
     elseif deltaX == 0 and deltaY ~= 0 then
         --game.print("It's a y difference")
-        table_entry = table_entry + getNS(deltaY)
+        table_entry = table_entry + 2^(getNS(deltaY))
     elseif deltaX ~=0 and deltaY ~= 0 then
         if math.abs(deltaX) > math.abs(deltaY) then
             --game.print("They're both different but x is larger")
-            table_entry = table_entry + getEW(deltaX)
+            table_entry = table_entry + 2^(getEW(deltaX))
         elseif math.abs(deltaX) < math.abs(deltaY) then
             --game.print("They're both different but y is larger")
-            table_entry = table_entry + getNS(deltaY)
+            table_entry = table_entry + 2^(getNS(deltaY))
         end
     end
     return table_entry
@@ -124,16 +130,16 @@ local function clamp_pipe(entity, player, lock_pipe, failsafe, reverse_entity)
             local deltaX = entity.position.x - neighbour.position.x
             local deltaY = entity.position.y - neighbour.position.y
             if deltaX ~= 0 and deltaY == 0 then
-                table_entry = table_entry + getEW(deltaX)
+                table_entry = table_entry + 2^(getEW(deltaX))
                 neighbour_count = neighbour_count + 1
             elseif deltaX == 0 and deltaY ~= 0 then
-                table_entry = table_entry + getNS(deltaY)
+                table_entry = table_entry + 2^(getNS(deltaY))
                 neighbour_count = neighbour_count + 1
             elseif deltaX ~= 0 and deltaY ~= 0 then
                 if math.abs(deltaX) > math.abs(deltaY) then
-                    table_entry = table_entry + getEW(deltaX)
+                    table_entry = table_entry + 2^(getEW(deltaX))
                 elseif math.abs(deltaX) < math.abs(deltaY) then
-                    table_entry = table_entry + getNS(deltaY)
+                    table_entry = table_entry + 2^(getNS(deltaY))
                 end
                 neighbour_count = neighbour_count + 1
             end
@@ -160,53 +166,41 @@ local function get_distance(entity, neighbour)
 end
 
 local function pipe_failsafe_clamp(event)
-    --game.print("It's a pipe, we're gonna check it")
-    --local pipe_to_place = 15
     local failsafe = false
     local entity = event.created_entity
     local player , pdata = Player.get(event.player_index)
-    --game.print(serpent.line(entity.fluidbox[1]))
     local pipes_to_clamp = {}
-    --[[local entity_fluidbox_name
-    if entity.fluidbox[1] and entity.fluidbox[1].name then
-        entity_fluidbox_name = entity.fluidbox[1].name
-    else
-        entity_fluidbox_name = false
-    end]]--
     for _, entities in pairs(entity.neighbours) do
         for _, neighbour in pairs(entities) do
-            --game.print("We're iterating neighbours on " .. entity.unit_number)
-            local fluid_box_counter = 0
-            --game.print("The neighbor fluidbox is " .. serpent.line(neighbour.fluidbox[1]))
-            --game.print("The current entity fluidbox is " .. serpent.line(entity.fluidbox[1]))
-            if neighbour.fluidbox[1] and neighbour.fluidbox[1].name and entity.fluidbox[1] and entity.fluidbox[1].name then
-                if neighbour.fluidbox[1].name ~= entity.fluidbox[1].name then
-                    --game.print("The fluid boxes don't match ")
-                    --pipe_to_place = pipe_to_place - get_direction(neighbour, entity)
-                    pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                    failsafe = true
-                end
-            elseif neighbour.fluidbox[1] and neighbour.fluidbox[1].name and not entity.fluidbox[1] then
-                local last_pipe = get_pipe(event.player_index)
-                if last_pipe and get_distance(entity, last_pipe) == 1 and last_pipe.fluidbox[1] and last_pipe.fluidbox[1].name then
-                    --game.print("Last pipe's fluid box is: " .. serpent.line(last_pipe.fluidbox[1]))
-                    if last_pipe.fluidbox[1].name ~= neighbour.fluidbox[1].name then
+            if neighbour.fluidbox[1] and neighbour.fluidbox[1].name then
+                local neighbor_fluid_box_name = neighbour.fluidbox[1].name
+                if entity.fluidbox[1] and entity.fluidbox[1].name then
+                    if neighbor_fluid_box_name ~= entity.fluidbox[1].name then
                         pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
                         failsafe = true
                     end
                 else
-                    for _, subsequent_entities in pairs(neighbour.neighbours) do
-                        for _, subsequent_neighbour in pairs(subsequent_entities) do
-                            if subsequent_neighbour.unit_number ~= entity.unit_number then
-                                if subsequent_neighbour.fluidbox[1] and subsequent_neighbour.fluidbox[1].name then
-                                    fluid_box_counter = fluid_box_counter + 1
-                                end
-                            end
-                        end
-                        if fluid_box_counter > 1 then
-                            --pipe_to_place = pipe_to_place - get_direction(neighbour, entity)
+                    --if not entity.fluidbox[1] then
+                    local last_pipe = get_pipe(event.player_index)
+                    if last_pipe and get_distance(entity, last_pipe) == 1 and last_pipe.fluidbox[1] and last_pipe.fluidbox[1].name then
+                        if last_pipe.fluidbox[1].name ~= neighbor_fluid_box_name then
                             pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
                             failsafe = true
+                        end
+                    else
+                        local fluid_box_counter = 0
+                        for _, subsequent_entities in pairs(neighbour.neighbours) do
+                            for _, subsequent_neighbour in pairs(subsequent_entities) do
+                                if subsequent_neighbour.unit_number ~= entity.unit_number then
+                                    if subsequent_neighbour.fluidbox[1] and subsequent_neighbour.fluidbox[1].name then
+                                        fluid_box_counter = fluid_box_counter + 1
+                                    end
+                                end
+                            end
+                            if fluid_box_counter > 1 then
+                                pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
+                                failsafe = true
+                            end
                         end
                     end
                 end
@@ -254,122 +248,6 @@ end
         return 4
     end
 end]]--
-
---[[local current_pipe_table =
-{
-    ["-clamped-none"] = {
-        directions = {0},
-    },
-    ["-clamped-W"] = {
-        directions = {1},
-    },
-    ["-clamped-E"] = {
-        directions = {2},
-    },
-    ["-clamped-EW"] = {
-        directions = {1, 2},
-    },
-    ["-clamped-N"] = {
-        directions = {4},
-    },
-    ["-clamped-NW"] = {
-        directions = {1, 4},
-    },
-    ["-clamped-NE"] = {
-        directions = {2, 4},
-    },
-    ["-clamped-NEW"] = {
-        directions = {1, 2, 4},
-    },
-    ["-clamped-S"] = {
-        directions = {8},
-    },
-    ["-clamped-SW"] = {
-        directions = {1, 8},
-    },
-    ["-clamped-SE"] = {
-        directions = {2, 8},
-    },
-    ["-clamped-SEW"] = {
-        directions = {1, 2, 8},
-    },
-    ["-clamped-NS"] = {
-        directions = {4, 8},
-    },
-    ["-clamped-NSW"] = {
-        directions = {1, 4, 8},
-    },
-    ["-clamped-NSE"] = {
-        directions = {2, 4, 8},
-    },
-    ["-clamped-NSEW"] = {
-        directions = {1, 2, 4, 8},
-    },
-}]]--
-
---[[local function get_new_pipe(name, direction)
-    for names, directions in pairs(current_pipe_table) do
-        if string.find(name, names) then
-            if directions[direction] and not directions ~= {0} then
-                local adder
-                for number in directions do
-                    adder = adder + number
-                end
-                --game.print("New pipe is already connected" .. adder)
-                return adder
-            else
-                local adder
-                for number in directions do
-                    adder = adder + number
-                end
-                adder = adder + direction
-                --game.print("new pipe is adding connection as" .. adder)
-                return adder
-            end
-        end
-    end
-end]]--
---Still fixing this area
---[[local function controlled_pipe_placement(event)
-    local player , pdata = Player.get(event.player_index)
-    if not pdata.controlled_mode then
-        return
-    end
-    local entity = event.created_entity
-    if pdata and pdata.last_placed_pipe then
-        local last_entity = (player.surface.find_entities_filtered{position = pdata.last_placed_pipe, type = 'pipe'})[1]
-        if get_distance(entity, last_entity) == 1 then
-            local direction_from_current = get_direction(entity, last_entity)
-            local reverse_direction = get_opposite_direction(direction_from_current)
-            local current_new_pipe = get_new_pipe(entity.name, direction_from_current)
-            local previous_new_pipe = get_new_pipe(last_entity.name, reverse_direction)
-            --game.print(previous_new_pipe .. " is the previous new pipe")
-            local new_pipe = place_clamped_pipe(entity, current_new_pipe, player)
-            pdata.last_placed_pipe = new_pipe.position
-            place_clamped_pipe(last_entity, previous_new_pipe, player)
-        else
-            local new_pipe = place_clamped_pipe(entity, 0, player)
-            pdata.last_placed_pipe = new_pipe.position
-        end
-    else
-        local new_pipe = place_clamped_pipe(entity, 0, player)
-        pdata.last_placed_pipe = new_pipe.position
-    end
-end]]--
-
-
-
---[[local function controlled_pipe_placement_toggle(event)
-    local player , pdata = Player.get(event.player_index)
-    if pdata.controlled_mode then
-        pdata.controlled_mode = false
-        player.print("Controlled mode off")
-    else
-        pdata.controlled_mode = true
-        player.print("Controlled mode on")
-    end
-end
-Event.register('picker-controlled-pipe-toggle', controlled_pipe_placement_toggle)]]--
 
 local function toggle_pipe_clamp(event)
     local player, _ = Player.get(event.player_index)
