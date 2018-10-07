@@ -54,10 +54,10 @@ end
 local function get_last_pipe(player_index)
     local player, pdata = Player.get(player_index)
     local pipe = (player.surface.find_entities_filtered{position = pdata.last_placed_pipe, type = 'pipe'})[1]
-    local return_data = {pipe = pipe, unit_number = false, fluid_name = "none"}
+    local return_data = {entity = pipe, unit_number = false, fluid_name = "none"}
     if pipe then
-        if pipe.fluidbox[1] then
-            return_data.fluid_name = return_data.pipe.fluidbox[1].name
+        if pipe.fluidbox[1] and pipe.fluidbox[1].name then
+            return_data.fluid_name = pipe.fluidbox[1].name
         end
         return_data.unit_number = pipe.unit_number
     end
@@ -66,7 +66,7 @@ end
 
 local function get_pipe_info(entity)
     return_data = {pipe = entity, fluid_name = "none"}
-    if entity.fluidbox[1] then
+    if entity.fluidbox[1] and entity.fluidbox[1].name then
         return_data.fluid_name = entity.fluidbox[1].name
     end
     return return_data
@@ -204,20 +204,25 @@ local function pipe_failsafe_clamp(event, unclamp)
             if neighbour.type == 'pipe' then
                 local neighbour_data = get_pipe_info(neighbour)
                 local neighbour_fluid_name = neighbour_data.fluid_name
-                if unclamp or (neighbour_fluid_name ~= current_fluid and neighbour_fluid_name ~= "none" and current_fluid ~= "none") then
+                if (unclamp and neighbour_fluid_name ~= current_fluid) or (neighbour_fluid_name ~= current_fluid and neighbour_fluid_name ~= "none" and current_fluid ~= "none") then
                     pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
                     failsafe = true
                 elseif last_pipe_unit_number ~= neighbour.unit_number then
-                    local fluid_box_counter = 0
-                    for _, subsequent_entities in pairs(neighbour.neighbours) do
-                        for _, subsequent_neighbour in pairs(subsequent_entities) do
-                            if subsequent_neighbour.unit_number ~= entity.unit_number then
-                                fluid_box_counter = fluid_box_counter + 1
+                    if get_distance(entity, last_pipe) == 1 and last_pipe_fluid ~= neighbour_fluid_name then
+                        pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
+                        failsafe = true
+                    else
+                        local fluid_box_counter = 0
+                        for _, subsequent_entities in pairs(neighbour.neighbours) do
+                            for _, subsequent_neighbour in pairs(subsequent_entities) do
+                                if subsequent_neighbour.unit_number ~= entity.unit_number then
+                                    fluid_box_counter = fluid_box_counter + 1
+                                end
                             end
-                        end
-                        if fluid_box_counter > 1 then
-                            pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                            failsafe = true
+                            if fluid_box_counter > 1 then
+                                pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
+                                failsafe = true
+                            end
                         end
                     end
                 end
@@ -304,6 +309,9 @@ local function on_built_entity(event)
     if event.created_entity and event.created_entity.type == 'pipe' then
         local _, pdata = Player.get(event.player_index)
         local position_to_save = event.created_entity.position
+        if not pdata.last_placed_pipe then
+            pdata.last_placed_pipe = position_to_save
+        end
         if not pdata.auto_clamp_mode_off then
             pipe_failsafe_clamp(event, false)
         end
