@@ -204,52 +204,20 @@ local function pipe_failsafe_clamp(event, unclamp)
             if neighbour.type == 'pipe' then
                 local neighbour_data = get_pipe_info(neighbour)
                 local neighbour_fluid_name = neighbour_data.fluid_name
-                if unclamp then
-                    if neighbour_fluid_name ~= current_fluid and neighbour_fluid_name ~= "none" and current_fluid ~= "none" then
-                        pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                        failsafe = true
-                    end
-                else
-                    if last_pipe_unit_number == neighbour.unit_number then
-                        if not get_distance(entity, neighbour) == 1 and not (current_fluid == "none" or neighbour_fluid_name == "none") then
-                            local fluid_box_counter = 0
-                            for _, subsequent_entities in pairs(neighbour.neighbours) do
-                                for _, subsequent_neighbour in pairs(subsequent_entities) do
-                                    if subsequent_neighbour.unit_number ~= entity.unit_number then
-                                        fluid_box_counter = fluid_box_counter + 1
-                                    end
-                                end
-                                if fluid_box_counter > 1 then
-                                    pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                                    failsafe = true
-                                end
+                if unclamp or (neighbour_fluid_name ~= current_fluid and neighbour_fluid_name ~= "none" and current_fluid ~= "none") then
+                    pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
+                    failsafe = true
+                elseif last_pipe_unit_number ~= neighbour.unit_number then
+                    local fluid_box_counter = 0
+                    for _, subsequent_entities in pairs(neighbour.neighbours) do
+                        for _, subsequent_neighbour in pairs(subsequent_entities) do
+                            if subsequent_neighbour.unit_number ~= entity.unit_number then
+                                fluid_box_counter = fluid_box_counter + 1
                             end
                         end
-                    elseif neighbour_fluid_name ~= current_fluid then
-                        local fluid_box_counter = 0
-                        for _, subsequent_entities in pairs(neighbour.neighbours) do
-                            for _, subsequent_neighbour in pairs(subsequent_entities) do
-                                if subsequent_neighbour.unit_number ~= entity.unit_number then
-                                    fluid_box_counter = fluid_box_counter + 1
-                                end
-                            end
-                            if fluid_box_counter > 1 then
-                                pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                                failsafe = true
-                            end
-                        end
-                    else
-                        local fluid_box_counter = 0
-                        for _, subsequent_entities in pairs(neighbour.neighbours) do
-                            for _, subsequent_neighbour in pairs(subsequent_entities) do
-                                if subsequent_neighbour.unit_number ~= entity.unit_number then
-                                    fluid_box_counter = fluid_box_counter + 1
-                                end
-                            end
-                            if fluid_box_counter > 1 then
-                                pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                                failsafe = true
-                            end
+                        if fluid_box_counter > 1 then
+                            pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
+                            failsafe = true
                         end
                     end
                 end
