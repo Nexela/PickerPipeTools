@@ -11,7 +11,7 @@
             "stopOnEntry": false,
             "program": "${file}",
             "cwd": "${workspaceFolder}",
-            "path": "?.lua;${workspaceFolder}/?.lua;C:\\lua\\luarocks\\lua\\?.lua;c:\\lua\\luarocks\\systree\\share\\lua\\5.2\\?.lua;;",
+            "path": "?.lua;${workspaceFolder}/?.lua;C:\\lua\\luarocks\\lua\\?.lua;c:\\lua\\luarocks\\systree\\share\\lua\\5.2\\?.lua;c:\\lua\\luarocks\\systree\\share\\lua\\5.2\\?\\init.lua;c:\\lua\\luarocks\\lua\\lualib\\?.lua;",
             "cpath": "${workspaceFolder/?.dll",
             "arg": [],
             "consoleCoding": "utf8"
