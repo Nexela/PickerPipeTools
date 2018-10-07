@@ -15,7 +15,7 @@ data:extend{
     {
         type = "custom-input",
         name = "picker-auto-clamp-toggle",
-        key_sequence = "CONTROL + SHIFT + ALT + C",
+        key_sequence = "CONTROL + SHIFT + C",
         --linked_game_control = 'rotate',
         consuming = "script-only"
     }
