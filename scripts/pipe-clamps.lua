@@ -65,7 +65,7 @@ local function get_last_pipe(player_index)
 end
 
 local function get_pipe_info(entity)
-    return_data = {pipe = entity, fluid_name = "none"}
+    local return_data = {pipe = entity, fluid_name = "none"}
     if entity.fluidbox[1] and entity.fluidbox[1].name then
         return_data.fluid_name = entity.fluidbox[1].name
     end
@@ -175,7 +175,7 @@ end
 
 local function get_distance(entity, neighbour)
     if not neighbour then
-        return
+        return 0
     end
     local deltaX = math.abs(entity.position.x - neighbour.position.x)
     local deltaY = math.abs(entity.position.y - neighbour.position.y)
@@ -262,18 +262,6 @@ local function un_clamp_pipe(entity, player)
     pipe_failsafe_clamp({created_entity = new, player_index = player.index}, true)
 end
 
---[[local function get_opposite_direction(direction)
-    if direction == 1 then
-        return 2
-    elseif direction == 2 then
-        return 1
-    elseif direction == 4 then
-        return 8
-    elseif direction == 8 then
-        return 4
-    end
-end]]--
-
 local function toggle_pipe_clamp(event)
     local player, _ = Player.get(event.player_index)
     local selection = player.selected
@@ -325,10 +313,10 @@ local function toggle_auto_clamp(event)
     local player, pdata = Player.get(event.player_index)
     if pdata.auto_clamp_mode_off then
         pdata.auto_clamp_mode_off = false
-        player.print("Auto clamp mode on")
+        player.print({"pipe-tools.auto-clamp-on"})
     else
         pdata.auto_clamp_mode_off = true
-        player.print("Auto clamp mode off")
+        player.print({"pipe-tools.auto-clamp-off"})
     end
 end
 Event.register("picker-auto-clamp-toggle", toggle_auto_clamp)
