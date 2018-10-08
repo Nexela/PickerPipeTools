@@ -207,7 +207,7 @@ local function pipe_failsafe_clamp(event, unclamp)
                 if (unclamp and neighbour_fluid_name ~= current_fluid) or (neighbour_fluid_name ~= current_fluid and neighbour_fluid_name ~= "none" and current_fluid ~= "none") then
                     pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
                     failsafe = true
-                elseif last_pipe_unit_number ~= neighbour.unit_number then
+                elseif last_pipe_unit_number ~= neighbour.unit_number and not pdata.auto_clamp_mode_off then
                     if get_distance(entity, last_pipe) == 1 and last_pipe_fluid ~= neighbour_fluid_name then
                         pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
                         failsafe = true
@@ -312,9 +312,7 @@ local function on_built_entity(event)
         if not pdata.last_placed_pipe then
             pdata.last_placed_pipe = position_to_save
         end
-        if not pdata.auto_clamp_mode_off then
             pipe_failsafe_clamp(event, false)
-        end
         pdata.last_placed_pipe = position_to_save
     end
 end
