@@ -11,24 +11,23 @@ defines.direction.east     == 2         4
 defines.direction.south     == 4        16
 defines.direction.west     == 6         64
 ]]
-
 local clamped_name = {
     --[1] = "-clamped-none",
-    [1] = "-clamped-N",
-    [4] = "-clamped-E",
-    [5] = "-clamped-NE",
-    [16] = "-clamped-S",
-    [17] = "-clamped-NS",
-    [20] = "-clamped-SE",
-    [21] = "-clamped-NSE",
-    [64] = "-clamped-W",
-    [65] = "-clamped-NW",
-    [68] = "-clamped-EW",
-    [69] = "-clamped-NEW",
-    [80] = "-clamped-SW",
-    [81] = "-clamped-NSW",
-    [84] = "-clamped-SEW",
-    [85] = "-clamped-NSEW",
+    [1] = '-clamped-N',
+    [4] = '-clamped-E',
+    [5] = '-clamped-NE',
+    [16] = '-clamped-S',
+    [17] = '-clamped-NS',
+    [20] = '-clamped-SE',
+    [21] = '-clamped-NSE',
+    [64] = '-clamped-W',
+    [65] = '-clamped-NW',
+    [68] = '-clamped-EW',
+    [69] = '-clamped-NEW',
+    [80] = '-clamped-SW',
+    [81] = '-clamped-NSW',
+    [84] = '-clamped-SEW',
+    [85] = '-clamped-NSEW'
 }
 
 local yellow = {r = 1, g = 1}
@@ -53,30 +52,27 @@ end
 
 local function get_last_pipe(player_index)
     local player, pdata = Player.get(player_index)
-    local pipe = (player.surface.find_entities_filtered{position = pdata.last_placed_pipe, type = 'pipe'})[1]
-    local return_data = {entity = pipe, unit_number = false, fluid_name = "none"}
-    if pipe then
-        if pipe.fluidbox[1] and pipe.fluidbox[1].name then
-            return_data.fluid_name = pipe.fluidbox[1].name
-        end
-        return_data.unit_number = pipe.unit_number
-    end
-    return return_data
+    local pipe = (player.surface.find_entities_filtered {position = pdata.last_pipe_position, type = 'pipe'})[1]
+    return pipe or {}
 end
 
 local function get_pipe_info(entity)
-    local return_data = {pipe = entity, fluid_name = "none"}
-    if entity.fluidbox[1] and entity.fluidbox[1].name then
-        return_data.fluid_name = entity.fluidbox[1].name
+    if entity.valid then
+        local box = entity.fluidbox[1]
+        return {
+            pipe = entity,
+            fluid_name = box and box.name
+        }
     end
-    return return_data
 end
+
 local function place_clamped_pipe(entity, table_entry, player, lock_pipe, failsafe)
     --local player, pdata = Player.get(player.index)
     local entity_position = entity.position
     local new
     if table_entry <= 85 and clamped_name[table_entry] then
-        new = entity.surface.create_entity {
+        new =
+            entity.surface.create_entity {
             name = entity.prototype.mineable_properties.products[1].name .. clamped_name[table_entry],
             position = entity_position,
             force = entity.force,
@@ -89,7 +85,7 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, failsa
                 position = entity_position,
                 text = {'pipe-tools.clamped'},
                 time_to_live = 60,
-                speed = 1/60,
+                speed = 1 / 60,
                 color = yellow
             }
         else
@@ -98,7 +94,7 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, failsa
                 position = entity_position,
                 text = {'pipe-tools.clamped'},
                 time_to_live = 60,
-                speed = 1/60,
+                speed = 1 / 60,
                 color = green
             }
         end
@@ -126,17 +122,17 @@ local function get_direction(entity, neighbour)
     local deltaY = entity.position.y - neighbour.position.y
     if deltaX ~= 0 and deltaY == 0 then
         --game.print("It's a x difference")
-        table_entry = table_entry + 2^(getEW(deltaX))
+        table_entry = table_entry + 2 ^ (getEW(deltaX))
     elseif deltaX == 0 and deltaY ~= 0 then
         --game.print("It's a y difference")
-        table_entry = table_entry + 2^(getNS(deltaY))
-    elseif deltaX ~=0 and deltaY ~= 0 then
+        table_entry = table_entry + 2 ^ (getNS(deltaY))
+    elseif deltaX ~= 0 and deltaY ~= 0 then
         if math.abs(deltaX) > math.abs(deltaY) then
             --game.print("They're both different but x is larger")
-            table_entry = table_entry + 2^(getEW(deltaX))
+            table_entry = table_entry + 2 ^ (getEW(deltaX))
         elseif math.abs(deltaX) < math.abs(deltaY) then
             --game.print("They're both different but y is larger")
-            table_entry = table_entry + 2^(getNS(deltaY))
+            table_entry = table_entry + 2 ^ (getNS(deltaY))
         end
     end
     return table_entry
@@ -150,16 +146,16 @@ local function clamp_pipe(entity, player, lock_pipe, failsafe, reverse_entity)
             local deltaX = entity.position.x - neighbour.position.x
             local deltaY = entity.position.y - neighbour.position.y
             if deltaX ~= 0 and deltaY == 0 then
-                table_entry = table_entry + 2^(getEW(deltaX))
+                table_entry = table_entry + 2 ^ (getEW(deltaX))
                 neighbour_count = neighbour_count + 1
             elseif deltaX == 0 and deltaY ~= 0 then
-                table_entry = table_entry + 2^(getNS(deltaY))
+                table_entry = table_entry + 2 ^ (getNS(deltaY))
                 neighbour_count = neighbour_count + 1
             elseif deltaX ~= 0 and deltaY ~= 0 then
                 if math.abs(deltaX) > math.abs(deltaY) then
-                    table_entry = table_entry + 2^(getEW(deltaX))
+                    table_entry = table_entry + 2 ^ (getEW(deltaX))
                 elseif math.abs(deltaX) < math.abs(deltaY) then
-                    table_entry = table_entry + 2^(getNS(deltaY))
+                    table_entry = table_entry + 2 ^ (getNS(deltaY))
                 end
                 neighbour_count = neighbour_count + 1
             end
@@ -183,58 +179,57 @@ local function get_distance(entity, neighbour)
         return deltaX
     elseif deltaX == 0 and deltaY ~= 0 then
         return deltaY
-    elseif deltaX ~=0 and deltaY ~= 0 then
+    elseif deltaX ~= 0 and deltaY ~= 0 then
         return math.sqrt(((deltaX ^ 2) + (deltaY ^ 2)))
     end
 end
 
 local function pipe_failsafe_clamp(event, unclamp)
-    local failsafe = false
     local entity = event.created_entity
-    local player , pdata = Player.get(event.player_index)
-    local pipes_to_clamp = {}
 
-    local current_pipe_data = get_pipe_info(entity)
-    local current_fluid = current_pipe_data.fluid_name
+    local last_pipe_data = get_pipe_info(get_last_pipe(event.player_index))
 
-    local last_pipe_data = get_last_pipe(event.player_index)
-    local last_pipe = last_pipe_data.entity
-    local last_pipe_unit_number = last_pipe_data.unit_number
-    local last_pipe_fluid = last_pipe_data.fluid_name
+    if last_pipe_data then
+        local failsafe = false
+        local current_fluid = get_pipe_info(entity).fluid_name
+        local last_pipe = last_pipe_data.entity
+        local player, pdata = Player.get(event.player_index)
+        local pipes_to_clamp = {}
 
-    for _, entities in pairs(entity.neighbours) do
-        for _, neighbour in pairs(entities) do
-            if neighbour.type == 'pipe' then
-                local neighbour_data = get_pipe_info(neighbour)
-                local neighbour_fluid_name = neighbour_data.fluid_name
-                if (unclamp and neighbour_fluid_name ~= current_fluid and neighbour_fluid_name ~= "none" and current_fluid ~= "none") or (neighbour_fluid_name ~= current_fluid and neighbour_fluid_name ~= "none" and current_fluid ~= "none") then
-                    pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                    failsafe = true
-                elseif not unclamp and last_pipe_unit_number ~= neighbour.unit_number and not pdata.auto_clamp_mode_off then
-                    if get_distance(entity, last_pipe) == 1 and last_pipe_fluid ~= neighbour_fluid_name then
+        for _, entities in pairs(entity.neighbours) do
+            for _, neighbour in pairs(entities) do
+                if neighbour.type == 'pipe' then
+                    local neighbour_fluid = get_pipe_info(neighbour).fluid_name
+                    -- Not sure why you are checking unclamp here since you are returning true regardless of unclamp value
+                    if (neighbour_fluid and current_fluid) and ((unclamp and neighbour_fluid ~= current_fluid) or (neighbour_fluid ~= current_fluid)) then
                         pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
                         failsafe = true
-                    else
-                        local fluid_box_counter = 0
-                        for _, subsequent_entities in pairs(neighbour.neighbours) do
-                            for _, subsequent_neighbour in pairs(subsequent_entities) do
-                                if subsequent_neighbour.unit_number ~= entity.unit_number then
-                                    fluid_box_counter = fluid_box_counter + 1
+                    elseif not unclamp and last_pipe ~= neighbour and not pdata.auto_clamp_mode_off then
+                        if get_distance(entity, last_pipe) == 1 and last_pipe_data.fluid_name ~= neighbour_fluid then
+                            pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
+                            failsafe = true
+                        else
+                            local fluid_box_counter = 0
+                            for _, subsequent_entities in pairs(neighbour.neighbours) do
+                                for _, subsequent_neighbour in pairs(subsequent_entities) do
+                                    if subsequent_neighbour ~= entity then
+                                        fluid_box_counter = fluid_box_counter + 1
+                                    end
                                 end
-                            end
-                            if fluid_box_counter > 1 then
-                                pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                                failsafe = true
+                                if fluid_box_counter > 1 then
+                                    pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
+                                    failsafe = true
+                                end
                             end
                         end
                     end
                 end
             end
         end
-    end
-    if failsafe then
-        for _, entities in pairs(pipes_to_clamp) do
-            clamp_pipe(entities, player, false, failsafe, entity)
+        if failsafe then
+            for _, entities in pairs(pipes_to_clamp) do
+                clamp_pipe(entities, player, false, failsafe, entity)
+            end
         end
     end
 end
@@ -295,16 +290,15 @@ local function toggle_area_clamp(event)
 end
 Event.register({defines.events.on_player_selected_area, defines.events.on_player_alt_selected_area}, toggle_area_clamp)
 
-
 local function on_built_entity(event)
     if event.created_entity and event.created_entity.type == 'pipe' then
         local _, pdata = Player.get(event.player_index)
         local position_to_save = event.created_entity.position
-        if not pdata.last_placed_pipe then
-            pdata.last_placed_pipe = position_to_save
+        if not pdata.last_pipe_position then
+            pdata.last_pipe_position = position_to_save
         end
-            pipe_failsafe_clamp(event, false)
-        pdata.last_placed_pipe = position_to_save
+        pipe_failsafe_clamp(event, false)
+        pdata.last_pipe_position = position_to_save
     end
 end
 Event.register(defines.events.on_built_entity, on_built_entity)
@@ -313,10 +307,10 @@ local function toggle_auto_clamp(event)
     local player, pdata = Player.get(event.player_index)
     if pdata.auto_clamp_mode_off then
         pdata.auto_clamp_mode_off = false
-        player.print({"pipe-tools.auto-clamp-on"})
+        player.print({'pipe-tools.auto-clamp-on'})
     else
         pdata.auto_clamp_mode_off = true
-        player.print({"pipe-tools.auto-clamp-off"})
+        player.print({'pipe-tools.auto-clamp-off'})
     end
 end
-Event.register("picker-auto-clamp-toggle", toggle_auto_clamp)
+Event.register('picker-auto-clamp-toggle', toggle_auto_clamp)
