@@ -174,6 +174,9 @@ local function clamp_pipe(entity, player, lock_pipe, failsafe, reverse_entity)
 end
 
 local function get_distance(entity, neighbour)
+    if not neighbour then
+        return
+    end
     local deltaX = math.abs(entity.position.x - neighbour.position.x)
     local deltaY = math.abs(entity.position.y - neighbour.position.y)
     if deltaX ~= 0 and deltaY == 0 then
@@ -204,10 +207,10 @@ local function pipe_failsafe_clamp(event, unclamp)
             if neighbour.type == 'pipe' then
                 local neighbour_data = get_pipe_info(neighbour)
                 local neighbour_fluid_name = neighbour_data.fluid_name
-                if (unclamp and neighbour_fluid_name ~= current_fluid) or (neighbour_fluid_name ~= current_fluid and neighbour_fluid_name ~= "none" and current_fluid ~= "none") then
+                if (unclamp and neighbour_fluid_name ~= current_fluid and neighbour_fluid_name ~= "none" and current_fluid ~= "none") or (neighbour_fluid_name ~= current_fluid and neighbour_fluid_name ~= "none" and current_fluid ~= "none") then
                     pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
                     failsafe = true
-                elseif last_pipe_unit_number ~= neighbour.unit_number and not pdata.auto_clamp_mode_off then
+                elseif not unclamp and last_pipe_unit_number ~= neighbour.unit_number and not pdata.auto_clamp_mode_off then
                     if get_distance(entity, last_pipe) == 1 and last_pipe_fluid ~= neighbour_fluid_name then
                         pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
                         failsafe = true

@@ -4,10 +4,10 @@ local west = {position = {-1, 0}}
 local east = {position = {1, 0}}
 
 local nameTable = {
-    ["none"] = {
+    --[[["none"] = {
         locale = "[none]",
         positions = {},
-    },
+    },]]
     ["E"] = {
         locale = "[East]",
         positions = {east},
@@ -236,12 +236,14 @@ local function create_picture_table(data, name)
                     layers = {
                         currentLayerData,
                         {
-                            filename = "__PickerPipeTools__/graphics/icons/lock.png",
+                            filename = clamped_layer[pictureName].hr_image_path,
+                            --"__PickerPipeTools__/graphics/icons/lock.png",
                             priority = "extra-high",
-                            width = 32,
-                            height = 32,
-                            scale = 0.8,
-                            shift = util.by_pixel(0, -5),
+                            width = 128,
+                            height = 128,
+                            --scale = 0.8,
+                            scale = 0.25,
+                            --shift = util.by_pixel(0, -5),
                             hr_version = {
                                 filename = clamped_layer[pictureName].hr_image_path,
                                 priority = "extra-high",
@@ -265,12 +267,14 @@ local function create_picture_table(data, name)
                     layers = {
                         currentLayerData,
                         {
-                            filename = "__PickerPipeTools__/graphics/icons/lock.png",
+                            filename = clamped_layer[pictureName].hr_image_path,
+                            --"__PickerPipeTools__/graphics/icons/lock.png",
                             priority = "extra-high",
-                            width = 32,
-                            height = 32,
-                            scale = 0.8,
-                            shift = util.by_pixel(0, -5),
+                            width = 128,
+                            height = 128,
+                            --scale = 0.8,
+                            scale = 0.25,
+                            --shift = util.by_pixel(0, -5),
                             hr_version = {
                                 filename = layer_image_to_keep,
                                 priority = "extra-high",
@@ -321,12 +325,14 @@ for i, pipe in pairs(data.raw["pipe"]) do
                             layers = {
                                 currentLayerData,
                                 {
-                                    filename = "__PickerPipeTools__/graphics/icons/lock.png",
+                                    filename = clamped_layer[pictureName].hr_image_path,
+                                    --"__PickerPipeTools__/graphics/icons/lock.png",
                                     priority = "extra-high",
-                                    width = 32,
-                                    height = 32,
-                                    scale = 0.8,
-                                    shift = util.by_pixel(0, -5),
+                                    width = 128,
+                                    height = 128,
+                                    --scale = 0.8,
+                                    scale = 0.5,
+                                    --shift = util.by_pixel(0, -5),
                                     hr_version = {
                                         filename = clamped_layer[pictureName].hr_image_path,
                                         priority = "extra-high",
