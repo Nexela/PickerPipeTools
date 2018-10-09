@@ -34,14 +34,6 @@ local yellow = {r = 1, g = 1}
 local green = {g = 1}
 local red = {r = 1}
 
-local ignore_pipes = {}
-local function load_pipe_connections()
-    if remote.interfaces['underground-pipe-pack'] then
-        ignore_pipes = remote.call('underground-pipe-pack', 'get_ignored_pipes')
-    end
-end
-Event.register({Event.core_events.init, Event.core_events.load}, load_pipe_connections)
-
 local function getEW(deltaX)
     return deltaX > 0 and defines.direction.west or defines.direction.east
 end
@@ -50,22 +42,24 @@ local function getNS(deltaY)
     return deltaY > 0 and defines.direction.north or defines.direction.south
 end
 
-local function get_last_pipe(player_index)
-    local player, pdata = Player.get(player_index)
+-- can return nil or entity
+local function get_last_pipe(player, pdata)
     local pipe = (player.surface.find_entities_filtered {position = pdata.last_pipe_position, type = 'pipe'})[1]
-    return pipe or {}
+    return pipe
 end
 
+-- returns a table which may or may not have contents if entity passed is nil
 local function get_pipe_info(entity)
-    if entity.valid then
+    local data = {}
+    if entity and entity.valid then
         local box = entity.fluidbox[1]
-        return {
-            pipe = entity,
-            fluid_name = box and box.name
-        }
+        data.entity = entity
+        data.fluid_name = box and box.name
     end
+    return data
 end
 --((
+-- Clamping and Unclamping neet to check for for a filter and add it to the replaced pipe
 local function place_clamped_pipe(entity, table_entry, player, lock_pipe, failsafe)
     --local player, pdata = Player.get(player.index)
     local entity_position = entity.position
@@ -186,27 +180,24 @@ end
 --))
 local function pipe_failsafe_clamp(event, unclamp)
     local entity = event.created_entity
-
-    local last_pipe_data = get_pipe_info(get_last_pipe(event.player_index))
-    local last_pipe
-    if last_pipe_data then
-        last_pipe = last_pipe_data.pipe
-    end
-    local failsafe = false
-    local current_fluid = get_pipe_info(entity).fluid_name
     local player, pdata = Player.get(event.player_index)
+
+    local failsafe = false
     local pipes_to_clamp = {}
+
+    local current_fluid = get_pipe_info(entity).fluid_name
+    local last_pipe_data = get_pipe_info(get_last_pipe(player, pdata))
+    local last_pipe = last_pipe_data.entity
 
     for _, entities in pairs(entity.neighbours) do
         for _, neighbour in pairs(entities) do
             if neighbour.type == 'pipe' then
                 local neighbour_fluid = get_pipe_info(neighbour).fluid_name
-                -- Not sure why you are checking unclamp here since you are returning true regardless of unclamp value
-                if current_fluid and neighbour_fluid and ((unclamp and neighbour_fluid ~= current_fluid) or (neighbour_fluid ~= current_fluid)) then
+                if current_fluid and neighbour_fluid and (neighbour_fluid ~= current_fluid) then
                     game.print("Step one happened")
                     pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
                     failsafe = true
-                elseif not unclamp and last_pipe.unit_number ~= neighbour.unit_number and not pdata.auto_clamp_mode_off then
+                elseif not unclamp and last_pipe and last_pipe ~= neighbour and not pdata.auto_clamp_mode_off then
                     if get_distance(entity, last_pipe) == 1 and (last_pipe_data.fluid_name ~= neighbour_fluid) then
                         game.print("The fluids don't match")
                         pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
@@ -266,7 +257,7 @@ local function toggle_pipe_clamp(event)
     local lock_pipe = true
     if selection and selection.type == 'pipe' and selection.force == player.force then
         local clamped = string.find(selection.name, '%-clamped%-')
-        if not clamped and not ignore_pipes[selection.name] then
+        if not clamped then
             clamp_pipe(selection, player, lock_pipe)
         elseif clamped then
             un_clamp_pipe(selection, player)
@@ -282,7 +273,7 @@ local function toggle_area_clamp(event)
         for _, entity in pairs(event.entities) do
             if entity.valid and entity.type == 'pipe' then --Verify entity still exists. Un_clamp fires pipe_failsafe_clamp which may replace an entity in the event.entities table
                 local clamped = string.find(entity.name, '%-clamped%-')
-                if clamp and not clamped and not ignore_pipes[entity.name] then
+                if clamp and not clamped then
                     clamp_pipe(entity, player)
                 elseif not clamp and clamped then
                     un_clamp_pipe(entity, player)

@@ -39,7 +39,6 @@ local function new(player_index)
     return pdata
 end
 
--- TODO This should add into a table with a getter function to add everything correctly
 function Player.additional_data(func_or_table)
     Player._new_player_data = func_or_table
     return Player

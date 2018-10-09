@@ -1,0 +1,49 @@
+{
+  "LuaCoderAssist.debug": false,
+  "LuaCoderAssist.format.lineWidth": 360,
+  "LuaCoderAssist.format.quotemark": "single",
+  "LuaCoderAssist.ldoc.authorInFunctionLevel": false,
+  "LuaCoderAssist.ldoc.authorName": "TheStaplergun",
+  "LuaCoderAssist.luacheck.automaticOption": false,
+  "LuaCoderAssist.luacheck.enable": true,
+  "LuaCoderAssist.luacheck.fileSizeLimit": 500,
+  "LuaCoderAssist.luacheck.globals": [],
+  "LuaCoderAssist.luacheck.ignore": [],
+  "LuaCoderAssist.luacheck.jobs": 1,
+  "LuaCoderAssist.luacheck.keepAfterClosed": false,
+  "LuaCoderAssist.luacheck.onSave": true,
+  "LuaCoderAssist.luacheck.onTyping": true,
+  "LuaCoderAssist.luacheck.options": [],
+  "LuaCoderAssist.luacheck.std": [],
+  "LuaCoderAssist.luaparse.luaversion": 5.2,
+  "LuaCoderAssist.metric.enable": false,
+  "LuaCoderAssist.preloads": [
+    "c:\\lua\\luarocks\\systree\\share\\lua\\5.2"
+  ],
+  "LuaCoderAssist.search.externalPaths": [
+    "c:\\lua\\luarocks\\systree\\share\\lua\\5.2",
+    "c:\\lua\\luarocks\\lua"
+  ],
+  "LuaCoderAssist.search.filters": [],
+  "LuaCoderAssist.search.followLinks": true,
+  "editor.acceptSuggestionOnEnter": "off",
+  "editor.tabCompletion": "on",
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/.build": true,
+    "**/.history": true
+  },
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  "problems.decorations.enabled": true,
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true
+  },
+  "search.followSymlinks": true
+}
