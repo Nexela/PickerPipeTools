@@ -44,8 +44,7 @@ end
 
 -- can return nil or entity
 local function get_last_pipe(player, pdata)
-    local pipe = (player.surface.find_entities_filtered {position = pdata.last_pipe_position, type = 'pipe'})[1]
-    return pipe
+    return pdata.last_pipe_position and (player.surface.find_entities_filtered {position = pdata.last_pipe_position, type = 'pipe'})[1]
 end
 
 -- returns a table which may or may not have contents if entity passed is nil
@@ -64,6 +63,7 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, failsa
     --local player, pdata = Player.get(player.index)
     local entity_position = entity.position
     local new
+    local filter_table = entity.fluidbox.get_filter(1)
     if table_entry <= 85 and clamped_name[table_entry] then
         new =
             entity.surface.create_entity {
@@ -93,6 +93,7 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, failsa
             }
         end
         new.last_user = player
+        new.fluidbox.set_filter(1, filter_table)
         if entity then
             entity.destroy()
         end
@@ -194,15 +195,17 @@ local function pipe_failsafe_clamp(event, unclamp)
             if neighbour.type == 'pipe' then
                 local neighbour_fluid = get_pipe_info(neighbour).fluid_name
                 if current_fluid and neighbour_fluid and (neighbour_fluid ~= current_fluid) then
-                    game.print("Step one happened")
+                    player.print(current_fluid .. " and " .. neighbour_fluid .. " don't mix!")
                     pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
                     failsafe = true
-                elseif not unclamp and last_pipe and last_pipe ~= neighbour and not pdata.auto_clamp_mode_off then
-                    if get_distance(entity, last_pipe) == 1 and (last_pipe_data.fluid_name ~= neighbour_fluid) then
-                        game.print("The fluids don't match")
-                        pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                        failsafe = true
-                    else
+                elseif not unclamp then
+                    if last_pipe and last_pipe ~= neighbour and not pdata.auto_clamp_mode_off then
+                        if get_distance(entity, last_pipe) == 1 and last_pipe_data.fluid_name and neighbour_fluid and (last_pipe_data.fluid_name ~= neighbour_fluid) then
+                            player.print(last_pipe_data.fluid_name .. " and " .. neighbour_fluid .. " don't mix! (last tracked fluid)")
+                            pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
+                            failsafe = true
+                        end
+                    elseif not (last_pipe or get_distance(entity, last_pipe) ~= 1) and not pdata.auto_clamp_mode_off then
                         game.print("step three happened")
                         local fluid_box_counter = 0
                         for _, subsequent_entities in pairs(neighbour.neighbours) do
@@ -230,6 +233,7 @@ end
 
 local function un_clamp_pipe(entity, player)
     local pos = entity.position
+    local filter_table = entity.fluidbox.get_filter(1)
     local new =
         entity.surface.create_entity {
         name = entity.prototype.mineable_properties.products[1].name,
@@ -245,6 +249,7 @@ local function un_clamp_pipe(entity, player)
         color = yellow
     }
     new.last_user = player
+    new.fluidbox.set_filter(1, filter_table)
     if entity then
         entity.destroy()
     end
@@ -288,9 +293,6 @@ local function on_built_entity(event)
     if event.created_entity and event.created_entity.type == 'pipe' then
         local _, pdata = Player.get(event.player_index)
         local position_to_save = event.created_entity.position
-        if not pdata.last_pipe_position then
-            pdata.last_pipe_position = position_to_save
-        end
         pipe_failsafe_clamp(event, false)
         pdata.last_pipe_position = position_to_save
     end
