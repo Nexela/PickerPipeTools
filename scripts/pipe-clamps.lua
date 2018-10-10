@@ -79,7 +79,7 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, failsa
                 position = entity_position,
                 text = {'pipe-tools.clamped'},
                 time_to_live = 60,
-                speed = 1 / 60,
+                --speed = 1 / 60,
                 color = green
             }
         end
@@ -193,13 +193,14 @@ local function pipe_failsafe_clamp(event, unclamp)
                             position = neighbour.position,
                             text = {'pipe-tools.mismatch'},
                             time_to_live = 120,
+                            speed = 0,
                             color = red
                         }
                         pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
                         failsafe = true
                     elseif not unclamp then
                         --! If the player wasn't unclamping, do further checks.
-                        if last_pipe and neighbour ~= last_pipe then --? If there's a last pipe make sure it isnt the neighbour. If it's not clamp it. Allows parallel laying and T-ing into a pipeline if the fluids match, or if a pipe is empty.
+                        if last_pipe and neighbour ~= last_pipe then --? If there's a last pipe make sure it isnt the neighbour. If it's not clamp it. Allows parallel laying and T-ing into a pipeline.
                             local fluid_box_counter = 0
                             for _, subsequent_entities in pairs(neighbour.neighbours) do
                                 for _, subsequent_neighbour in pairs(subsequent_entities) do
@@ -228,7 +229,7 @@ local function pipe_failsafe_clamp(event, unclamp)
                         end
                     end
                 elseif not unclamp and not pdata.auto_clamp_mode_off then --? If the current pipe doesn't have a fluid, make sure the player wasn't just unclamping, and make sure auto clamp is on.
-                    --!<AUTO CLAMP MODE>
+                    --! <AUTO CLAMP MODE>
                     if last_pipe and neighbour ~= last_pipe and get_distance(entity, last_pipe) == 1 then --? This will see if last pipe exists, make sure that the neighbour isn't the last pipe, and if it isn't, see if it's within a tile (Tracking last pipes fluid)
                         if last_pipe_data.fluid_name and neighbour_fluid and (last_pipe_data.fluid_name ~= neighbour_fluid) then --? Within, if the last pipe has a fluid name see if the neighbour has a fluid. If so, do they match? If not clamp that neighbour. Allows parallel pipe laying of dissimilar fluids.
                             neighbour.surface.create_entity {
@@ -236,6 +237,7 @@ local function pipe_failsafe_clamp(event, unclamp)
                                 position = neighbour.position,
                                 text = {'pipe-tools.mismatch'},
                                 time_to_live = 120,
+                                speed = 0,
                                 color = red
                             }
                             pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
