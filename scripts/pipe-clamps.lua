@@ -12,7 +12,7 @@ defines.direction.south     == 4        16
 defines.direction.west     == 6         64
 ]]
 local clamped_name = {
-    --[1] = "-clamped-none",
+    --[0] = "-clamped-none",
     [1] = '-clamped-N',
     [4] = '-clamped-E',
     [5] = '-clamped-NE',
@@ -73,16 +73,7 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, failsa
             fast_replace = true,
             spill = false
         }
-        if failsafe then
-            new.surface.create_entity {
-                name = 'flying-text',
-                position = entity_position,
-                text = {'pipe-tools.clamped'},
-                time_to_live = 60,
-                speed = 1 / 60,
-                color = yellow
-            }
-        else
+        if not failsafe then
             new.surface.create_entity {
                 name = 'flying-text',
                 position = entity_position,
@@ -194,19 +185,76 @@ local function pipe_failsafe_clamp(event, unclamp)
         for _, neighbour in pairs(entities) do
             if neighbour.type == 'pipe' then
                 local neighbour_fluid = get_pipe_info(neighbour).fluid_name
-                if current_fluid and neighbour_fluid and (neighbour_fluid ~= current_fluid) then
-                    player.print(current_fluid .. " and " .. neighbour_fluid .. " don't mix!")
-                    pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                    failsafe = true
-                elseif not unclamp then
-                    if last_pipe and last_pipe ~= neighbour and not pdata.auto_clamp_mode_off then
-                        if get_distance(entity, last_pipe) == 1 and last_pipe_data.fluid_name and neighbour_fluid and (last_pipe_data.fluid_name ~= neighbour_fluid) then
-                            player.print(last_pipe_data.fluid_name .. " and " .. neighbour_fluid .. " don't mix! (last tracked fluid)")
+                if current_fluid then
+                    --! Ensure fluids don't mix
+                    if neighbour_fluid and (neighbour_fluid ~= current_fluid) then --? If the neighbour has a fluid and they don't match, we're clamping it. Period.
+                        neighbour.surface.create_entity {
+                            name = 'flying-text',
+                            position = neighbour.position,
+                            text = {'pipe-tools.mismatch'},
+                            time_to_live = 120,
+                            color = red
+                        }
+                        pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
+                        failsafe = true
+                    elseif not unclamp then
+                        --! If the player wasn't unclamping, do further checks.
+                        if last_pipe and neighbour ~= last_pipe then --? If there's a last pipe make sure it isnt the neighbour. If it's not clamp it. Allows parallel laying and T-ing into a pipeline if the fluids match, or if a pipe is empty.
+                            local fluid_box_counter = 0
+                            for _, subsequent_entities in pairs(neighbour.neighbours) do
+                                for _, subsequent_neighbour in pairs(subsequent_entities) do
+                                    if subsequent_neighbour ~= entity then
+                                        fluid_box_counter = fluid_box_counter + 1
+                                    end
+                                end
+                                if fluid_box_counter > 1 then
+                                    pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
+                                    failsafe = true
+                                end
+                            end
+                        elseif not last_pipe then --? Explicit check to make sure there isn't a last pipe. I don't want false to the above but then last pipe getting clamped anyways.
+                            local fluid_box_counter = 0
+                            for _, subsequent_entities in pairs(neighbour.neighbours) do
+                                for _, subsequent_neighbour in pairs(subsequent_entities) do
+                                    if subsequent_neighbour ~= entity then
+                                        fluid_box_counter = fluid_box_counter + 1
+                                    end
+                                end
+                                if fluid_box_counter > 1 then
+                                    pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
+                                    failsafe = true
+                                end
+                            end
+                        end
+                    end
+                elseif not unclamp and not pdata.auto_clamp_mode_off then --? If the current pipe doesn't have a fluid, make sure the player wasn't just unclamping, and make sure auto clamp is on.
+                    --!<AUTO CLAMP MODE>
+                    if last_pipe and neighbour ~= last_pipe and get_distance(entity, last_pipe) == 1 then --? This will see if last pipe exists, make sure that the neighbour isn't the last pipe, and if it isn't, see if it's within a tile (Tracking last pipes fluid)
+                        if last_pipe_data.fluid_name and neighbour_fluid and (last_pipe_data.fluid_name ~= neighbour_fluid) then --? Within, if the last pipe has a fluid name see if the neighbour has a fluid. If so, do they match? If not clamp that neighbour. Allows parallel pipe laying of dissimilar fluids.
+                            neighbour.surface.create_entity {
+                                name = 'flying-text',
+                                position = neighbour.position,
+                                text = {'pipe-tools.mismatch'},
+                                time_to_live = 120,
+                                color = red
+                            }
                             pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
                             failsafe = true
+                        else
+                            local fluid_box_counter = 0
+                            for _, subsequent_entities in pairs(neighbour.neighbours) do
+                                for _, subsequent_neighbour in pairs(subsequent_entities) do
+                                    if subsequent_neighbour ~= entity then
+                                        fluid_box_counter = fluid_box_counter + 1
+                                    end
+                                end
+                                if fluid_box_counter > 1 then
+                                    pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
+                                    failsafe = true
+                                end
+                            end
                         end
-                    elseif not (last_pipe or get_distance(entity, last_pipe) ~= 1) and not pdata.auto_clamp_mode_off then
-                        game.print("step three happened")
+                    elseif not last_pipe or (last_pipe and get_distance(entity, last_pipe) ~= 1) then --? Catches all other cases
                         local fluid_box_counter = 0
                         for _, subsequent_entities in pairs(neighbour.neighbours) do
                             for _, subsequent_neighbour in pairs(subsequent_entities) do
