@@ -276,7 +276,7 @@ local function pipe_failsafe_clamp(event, unclamp)
     end
 end
 
-local function un_clamp_pipe(entity, player)
+local function un_clamp_pipe(entity, player, area_unclamp)
     local pos = entity.position
     local filter_table = entity.fluidbox.get_filter(1)
     local new =
@@ -287,12 +287,14 @@ local function un_clamp_pipe(entity, player)
         fast_replace = true,
         spill = false
     }
-    new.surface.create_entity {
-        name = 'flying-text',
-        position = pos,
-        text = {'pipe-tools.unclamped'},
-        color = yellow
-    }
+    if not area_unclamp then
+        new.surface.create_entity {
+            name = 'flying-text',
+            position = pos,
+            text = {'pipe-tools.unclamped'},
+            color = yellow
+        }
+    end
     new.last_user = player
     new.fluidbox.set_filter(1, filter_table)
     if entity then
@@ -326,7 +328,7 @@ local function toggle_area_clamp(event)
                 if clamp and not clamped then
                     clamp_pipe(entity, player)
                 elseif not clamp and clamped then
-                    un_clamp_pipe(entity, player)
+                    un_clamp_pipe(entity, player, true)
                 end
             end
         end
