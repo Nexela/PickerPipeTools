@@ -59,12 +59,12 @@ local function get_pipe_info(entity)
 end
 --((
 -- Clamping and Unclamping neet to check for for a filter and add it to the replaced pipe
-local function place_clamped_pipe(entity, table_entry, player, lock_pipe, failsafe)
+local function place_clamped_pipe(entity, table_entry, player, lock_pipe, autoclamp)
     --local player, pdata = Player.get(player.index)
     local entity_position = entity.position
     local new
-    local filter_table = entity.fluidbox.get_filter(1)
     if table_entry <= 85 and clamped_name[table_entry] then
+        local filter_table = entity.fluidbox.get_filter(1)
         new =
             entity.surface.create_entity {
             name = entity.prototype.mineable_properties.products[1].name .. clamped_name[table_entry],
@@ -73,7 +73,7 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, failsa
             fast_replace = true,
             spill = false
         }
-        if not failsafe then
+        if not autoclamp then
             new.surface.create_entity {
                 name = 'flying-text',
                 position = entity_position,
@@ -119,7 +119,7 @@ local function get_direction(entity, neighbour)
     return table_entry
 end
 
-local function clamp_pipe(entity, player, lock_pipe, failsafe, reverse_entity)
+local function clamp_pipe(entity, player, lock_pipe, autoclamp, reverse_entity)
     local table_entry = 0
     local neighbour_count = 0
     for _, entities in pairs(entity.neighbours) do
@@ -146,7 +146,7 @@ local function clamp_pipe(entity, player, lock_pipe, failsafe, reverse_entity)
         if reverse_entity then
             table_entry = table_entry - get_direction(entity, reverse_entity)
         end
-        place_clamped_pipe(entity, table_entry, player, lock_pipe, failsafe)
+        place_clamped_pipe(entity, table_entry, player, lock_pipe, autoclamp)
     end
 end
 
@@ -165,11 +165,11 @@ local function get_distance(entity, neighbour)
     end
 end
 --))
-local function pipe_failsafe_clamp(event, unclamp)
+local function pipe_autoclamp_clamp(event, unclamp)
     local entity = event.created_entity
     local player, pdata = Player.get(event.player_index)
 
-    local failsafe = false
+    local autoclamp = false
     local pipes_to_clamp = {}
 
     local current_fluid = get_pipe_info(entity).fluid_name
@@ -192,7 +192,7 @@ local function pipe_failsafe_clamp(event, unclamp)
                             color = red
                         }
                         pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                        failsafe = true
+                        autoclamp = true
                     elseif not unclamp then
                         --! If the player wasn't unclamping, do further checks.
                         if last_pipe and neighbour ~= last_pipe then                                                                --? If there's a last pipe make sure it isnt the neighbour. If it's not clamp it. Allows parallel laying and T-ing into a pipeline.
@@ -205,7 +205,7 @@ local function pipe_failsafe_clamp(event, unclamp)
                                 end
                                 if fluid_box_counter > 1 then
                                     pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                                    failsafe = true
+                                    autoclamp = true
                                 end
                             end
                         elseif not last_pipe then                                                                                   --? Explicit check to make sure there isn't a last pipe. I don't want false to the above but then last pipe getting clamped anyways.
@@ -218,12 +218,12 @@ local function pipe_failsafe_clamp(event, unclamp)
                                 end
                                 if fluid_box_counter > 1 then
                                     pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                                    failsafe = true
+                                    autoclamp = true
                                 end
                             end
                         end
                     end
-                elseif not unclamp and not pdata.auto_clamp_mode_off then                                                           --? If the current pipe doesn't have a fluid, make sure the player wasn't just unclamping, and make sure auto clamp is on.
+                elseif not unclamp and (pdata.auto_clamp_mode) then                                                           --? If the current pipe doesn't have a fluid, make sure the player wasn't just unclamping, and make sure auto clamp is on.
                     --! <AUTO CLAMP MODE>
                     if last_pipe and neighbour ~= last_pipe and get_distance(entity, last_pipe) == 1 then                           --? This will see if last pipe exists, make sure that the neighbour isn't the last pipe, and if it isn't, see if it's within a tile (Tracking last pipes fluid)
                         if last_pipe_data.fluid_name and neighbour_fluid and (last_pipe_data.fluid_name ~= neighbour_fluid) then    --? Within, if the last pipe has a fluid name see if the neighbour has a fluid. If so, do they match? If not clamp that neighbour. Allows parallel pipe laying of dissimilar fluids.
@@ -236,7 +236,7 @@ local function pipe_failsafe_clamp(event, unclamp)
                                 color = red
                             }
                             pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                            failsafe = true
+                            autoclamp = true
                         else                                                                                                        --? Clamp the neighbour if it's part of an existing pipeline
                             local fluid_box_counter = 0
                             for _, subsequent_entities in pairs(neighbour.neighbours) do
@@ -247,7 +247,7 @@ local function pipe_failsafe_clamp(event, unclamp)
                                 end
                                 if fluid_box_counter > 1 then
                                     pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                                    failsafe = true
+                                    autoclamp = true
                                 end
                             end
                         end
@@ -261,7 +261,7 @@ local function pipe_failsafe_clamp(event, unclamp)
                             end
                             if fluid_box_counter > 1 then
                                 pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                                failsafe = true
+                                autoclamp = true
                             end
                         end
                     end
@@ -269,9 +269,9 @@ local function pipe_failsafe_clamp(event, unclamp)
             end
         end
     end
-    if failsafe then
+    if autoclamp then
         for _, entities in pairs(pipes_to_clamp) do
-            clamp_pipe(entities, player, false, failsafe, entity)
+            clamp_pipe(entities, player, false, autoclamp, entity)
         end
     end
 end
@@ -300,7 +300,7 @@ local function un_clamp_pipe(entity, player, area_unclamp)
     if entity then
         entity.destroy()
     end
-    pipe_failsafe_clamp({created_entity = new, player_index = player.index}, true)
+    pipe_autoclamp_clamp({created_entity = new, player_index = player.index}, true)
 end
 
 local function toggle_pipe_clamp(event)
@@ -323,7 +323,7 @@ local function toggle_area_clamp(event)
         local clamp = event.name == defines.events.on_player_selected_area
         local player = game.players[event.player_index]
         for _, entity in pairs(event.entities) do
-            if entity.valid and entity.type == 'pipe' then --? Verify entity still exists. Un_clamp fires pipe_failsafe_clamp which may replace an entity in the event.entities table
+            if entity.valid and entity.type == 'pipe' then --? Verify entity still exists. Un_clamp fires pipe_autoclamp_clamp which may replace an entity in the event.entities table
                 local clamped = string.find(entity.name, '%-clamped%-')
                 if clamp and not clamped then
                     clamp_pipe(entity, player)
@@ -339,8 +339,9 @@ Event.register({defines.events.on_player_selected_area, defines.events.on_player
 local function on_built_entity(event)
     if event.created_entity and event.created_entity.type == 'pipe' then
         local _, pdata = Player.get(event.player_index)
+        pdata.auto_clamp_mode = pdata.auto_clamp_mode == nil and true or pdata.auto_clamp_mode
         local position_to_save = event.created_entity.position
-        pipe_failsafe_clamp(event, false)
+        pipe_autoclamp_clamp(event, false)
         pdata.last_pipe_position = position_to_save
     end
 end
@@ -348,12 +349,21 @@ Event.register(defines.events.on_built_entity, on_built_entity)
 
 local function toggle_auto_clamp(event)
     local player, pdata = Player.get(event.player_index)
-    if pdata.auto_clamp_mode_off then
-        pdata.auto_clamp_mode_off = false
+    if event.parameter == "on" or event.parameter == "true" then
+        pdata.auto_clamp_mode = true
         player.print({'pipe-tools.auto-clamp-on'})
-    else
-        pdata.auto_clamp_mode_off = true
+    elseif event.parameter == "off" or event.parameter == "false" then
+        pdata.auto_clamp_mode = false
         player.print({'pipe-tools.auto-clamp-off'})
+    else
+        if pdata.auto_clamp_mode == false then
+            pdata.auto_clamp_mode = true
+            player.print({'pipe-tools.auto-clamp-on'})
+        else
+            pdata.auto_clamp_mode = false
+            player.print({'pipe-tools.auto-clamp-off'})
+        end
     end
 end
-Event.register('picker-auto-clamp-toggle', toggle_auto_clamp)
+
+commands.add_command('autoclamp', {"autoclamp-commands.toggle-autoclamp"}, toggle_auto_clamp)
