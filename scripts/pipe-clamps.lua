@@ -357,23 +357,20 @@ local function on_built_entity(event)
 end
 Event.register(defines.events.on_built_entity, on_built_entity)
 
+local truthy = {['on'] = true, ['true'] = true}
+local falsey = {['off'] = true, ['false'] = true}
+
 local function toggle_auto_clamp(event)
     local player, pdata = Player.get(event.player_index)
-    if event.parameter == "on" or event.parameter == "true" then
+    if truthy[event.parameter] then
         pdata.disable_auto_clamp = false
-        player.print({'pipe-tools.auto-clamp-on'})
-    elseif event.parameter == "off" or event.parameter == "false" then
+    elseif falsey[event.parameter] then
         pdata.disable_auto_clamp = true
-        player.print({'pipe-tools.auto-clamp-off'})
     else
-        if pdata.disable_auto_clamp then
-            pdata.disable_auto_clamp = false
-            player.print({'pipe-tools.auto-clamp-on'})
-        else
-            pdata.disable_auto_clamp = true
-            player.print({'pipe-tools.auto-clamp-off'})
-        end
+        pdata.disable_auto_clamp = not pdata.disable_auto_clamp
     end
+    player.print({'pipe-tools.auto-clamp', pdata.disable_auto_clamp and {'pipe-tools.off'} or {'pipe-tools.on'}})
+    return pdata.disable_auto_clamp
 end
 
 commands.add_command('autoclamp', {"autoclamp-commands.toggle-autoclamp"}, toggle_auto_clamp)
