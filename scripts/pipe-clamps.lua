@@ -248,7 +248,7 @@ local function pipe_autoclamp_clamp(event, unclamp)
                         pipes_to_clamp[#pipes_to_clamp + 1] = check_sub_neighbours(neighbour.neighbours, neighbour, entity)
                     end
                 end
-            else                                                                                                                    --? If it's not a pipe, we need to clamp our own pipe instead.
+            elseif not pdata.disable_auto_clamp then                                                                                --? If it's not a pipe, we need to clamp our own pipe instead.
                 local neighbour_fluid = get_pipe_info(neighbour).fluid_name
                 if current_fluid then
                     if current_fluid ~= neighbour_fluid then
