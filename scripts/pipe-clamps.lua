@@ -57,8 +57,9 @@ local function get_pipe_info(entity)
     end
     return data
 end
+
 --((
--- Clamping and Unclamping neet to check for for a filter and add it to the replaced pipe
+-- Clamping and Unclamping need to check for for a filter and add it to the replaced pipe
 local function place_clamped_pipe(entity, table_entry, player, lock_pipe, autoclamp)
     --local player, pdata = Player.get(player.index)
     local entity_position = entity.position
@@ -84,6 +85,12 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, autocl
         end
         new.last_user = player
         new.fluidbox.set_filter(1, filter_table)
+        local event = {
+            created_entity = new,
+            player_index = player.index,
+            clamped = true
+        }
+        script.raise_event(defines.events.script_raised_built, event)
         if entity then
             entity.destroy()
         end
@@ -168,6 +175,7 @@ local function get_distance(entity, neighbour)
     end
 end
 --))
+
 --[[local function count_fluid_boxes(subsequent_entities, entity)
     local fluid_box_counter = 0
     for _, subsequent_neighbour in pairs(subsequent_entities) do
@@ -196,7 +204,6 @@ local function pipe_autoclamp_clamp(event, unclamp)
     local entity = event.created_entity
     local player, pdata = Player.get(event.player_index)
 
-    --local autoclamp = false
     local pipes_to_clamp = {}
     local clamp_self
 
@@ -278,14 +285,12 @@ local function pipe_autoclamp_clamp(event, unclamp)
             end
         end
     end
-    --if next(pipes_to_clamp) then
     for _, entities in pairs(pipes_to_clamp) do
         clamp_pipe(entities, player, false, true, entity)
     end
     if clamp_self then
         clamp_pipe(entity, player, false, true, clamp_self)
     end
-    --end
 end
 
 local function un_clamp_pipe(entity, player, area_unclamp)
@@ -309,10 +314,16 @@ local function un_clamp_pipe(entity, player, area_unclamp)
     end
     new.last_user = player
     new.fluidbox.set_filter(1, filter_table)
+    local event = {
+        created_entity = new,
+        player_index = player.index,
+        clamped = false
+    }
+    script.raise_event(defines.events.script_raised_built, event)
     if entity then
         entity.destroy()
     end
-    pipe_autoclamp_clamp({created_entity = new, player_index = player.index}, true)
+    pipe_autoclamp_clamp(event, true)
 end
 
 local function toggle_pipe_clamp(event)
@@ -350,9 +361,8 @@ Event.register({defines.events.on_player_selected_area, defines.events.on_player
 local function on_built_entity(event)
     if event.created_entity and event.created_entity.type == 'pipe' then
         local _, pdata = Player.get(event.player_index)
-        local position_to_save = event.created_entity.position
         pipe_autoclamp_clamp(event, false)
-        pdata.last_pipe_position = position_to_save
+        pdata.last_pipe_position = event.created_entity.position
     end
 end
 Event.register(defines.events.on_built_entity, on_built_entity)
@@ -374,3 +384,4 @@ local function toggle_auto_clamp(event)
 end
 
 commands.add_command('autoclamp', {"autoclamp-commands.toggle-autoclamp"}, toggle_auto_clamp)
+remote.add_interface(script.mod_name, require('lib/interface'))
