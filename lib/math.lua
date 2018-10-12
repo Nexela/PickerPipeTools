@@ -225,7 +225,7 @@ end
 for k, v in pairs(math) do
     Math[k] = v
 end
-if not (STDLIB and STDLIB.no_global_math) then
+if not (_G.STDLIB and _G.STDLIB.no_global_math) then
     for k, v in pairs(Math) do
         _G.math[k] = v
     end

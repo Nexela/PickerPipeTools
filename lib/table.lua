@@ -649,7 +649,7 @@ end
 for k, v in pairs(table) do
     Table[k] = v
 end
-if not (STDLIB and STDLIB.no_global_table) then
+if not (_G.STDLIB and _G.STDLIB.no_global_table) then
     for k, v in pairs(Table) do
         _G.table[k] = v
     end

@@ -1,5 +1,7 @@
+local merge = _G.util.merge
+
 data:extend {
-    util.merge {
+    merge {
         data.raw['corpse']['wall-remnants'],
         {
             name = 'picker-pipe-marker-box-good',
@@ -18,7 +20,7 @@ data:extend {
             }
         }
     },
-    util.merge {
+    merge {
         data.raw['corpse']['wall-remnants'],
         {
             name = 'picker-pipe-marker-box-bad',
@@ -37,7 +39,7 @@ data:extend {
             }
         }
     },
-    util.merge {
+    merge {
         data.raw['corpse']['wall-remnants'],
         {
             name = 'picker-underground-pipe-marker-horizontal',
@@ -56,7 +58,7 @@ data:extend {
             }
         }
     },
-    util.merge {
+    merge {
         data.raw['corpse']['wall-remnants'],
         {
             name = 'picker-underground-pipe-marker-vertical',

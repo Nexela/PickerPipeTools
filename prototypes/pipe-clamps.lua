@@ -227,7 +227,7 @@ local dontChange = {
     flow_sprite = true
 }
 
-local function create_picture_table(data, name)
+local function _create_picture_table_(data, name)
     for pictureName, _ in pairs(data) do
         if not dontChange[pictureName] then
             if clamped_layer[pictureName] and clamped_layer[pictureName].add_layer and nameTable[name].layers_to_keep[pictureName] then
@@ -314,7 +314,7 @@ for i, pipe in pairs(data.raw["pipe"]) do
             }
             currentEntity.flags = {"placeable-neutral", "player-creation", "fast-replaceable-no-build-while-moving"}
             currentEntity.fluid_box.pipe_connections = pipeData.positions
-            currentEntity.fluid_box.pipe_covers = pipecoverspictures()
+            currentEntity.fluid_box.pipe_covers = _G.pipecoverspictures()
             --local picture_table = util.table.deepcopy(currentEntity.pictures)
             --currentEntity.pictures = create_picture_table(picture_table, name)
             for pictureName, _ in pairs(currentEntity.pictures) do
