@@ -256,9 +256,9 @@ local function pipe_autoclamp_clamp(event, unclamp)
                     end
                 end
             elseif not pdata.disable_auto_clamp then                                                                                --? If it's not a pipe, we need to clamp our own pipe instead.
-                local neighbour_fluid = get_pipe_info(neighbour).fluid_name
-                if current_fluid then
-                    if current_fluid ~= neighbour_fluid then
+                local neighbour_fluid = get_pipe_info(neighbour).fluid_name	                                                        --? NOTES: Try simple entity placement to prevent spam.
+                if current_fluid then                                                                                               --?
+                    if current_fluid ~= neighbour_fluid then                                                                        --?
                         entity.surface.create_entity {
                             name = 'flying-text',
                             position = entity.position,
@@ -361,8 +361,9 @@ Event.register({defines.events.on_player_selected_area, defines.events.on_player
 local function on_built_entity(event)
     if event.created_entity and event.created_entity.type == 'pipe' then
         local _, pdata = Player.get(event.player_index)
+        local position_to_save = event.created_entity.position --? Store position ahead of time. Entity can be invalidated (replaced) during the following function before storing it's position.
         pipe_autoclamp_clamp(event, false)
-        pdata.last_pipe_position = event.created_entity.position
+        pdata.last_pipe_position = position_to_save
     end
 end
 Event.register(defines.events.on_built_entity, on_built_entity)
