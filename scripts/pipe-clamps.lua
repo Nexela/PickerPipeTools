@@ -383,6 +383,6 @@ local function toggle_auto_clamp(event)
     player.print({'pipe-tools.auto-clamp', pdata.disable_auto_clamp and {'pipe-tools.off'} or {'pipe-tools.on'}})
     return pdata.disable_auto_clamp
 end
-
+Event.register("picker-auto-clamp-toggle", toggle_auto_clamp)
 commands.add_command('autoclamp', {"autoclamp-commands.toggle-autoclamp"}, toggle_auto_clamp)
 remote.add_interface(script.mod_name, require('lib/interface'))

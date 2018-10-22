@@ -1,5 +1,10 @@
 ---------------------------------------------------------------------------------------------------
-Version: 1.0.0
+Version: 0.1.1
+Date: 21. 10. 2018
+  Features:
+    - Change self clamp to only work against storage tanks. This resolves issues when trying to connect pipes to factories.
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
 Date: 11. 10. 2018
   Features:
     - Seperated into its own mod.
