@@ -2,6 +2,13 @@
 Version: 0.1.1
 Date: 21. 10. 2018
   Features:
+    -
+  Fixes:
+    - Pipe Highlight tool was improperly drawing underground markers into buildings that were not pipes. Now it only draws markers for underground pipes.
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 21. 10. 2018
+  Features:
     - Change self clamp to only work against storage tanks. This resolves issues when trying to connect pipes to factories.
     - Added keybind for toggling autoclamp.
 ---------------------------------------------------------------------------------------------------

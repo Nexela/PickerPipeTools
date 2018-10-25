@@ -26,22 +26,24 @@ local function showUndergroundSprites(event)
             for _, entities in pairs(entity.neighbours) do
                 for _, neighbour in pairs(entities) do
                     neighborCounter = neighborCounter + 1
-                    if (entity.position.x - neighbour.position.x) < -1.5 then
-                        local distancex = neighbour.position.x - entity.position.x
-                        for i = 1, distancex - 1, 1 do
-                            player.surface.create_entity {
-                                name = 'picker-underground-pipe-marker-horizontal',
-                                position = {entity.position.x + i, entity.position.y}
-                            }
+                    if neighbour.type == 'pipe-to-ground' or (neighbour.type == 'pump' and neighbour.name == 'underground-mini-pump') then
+                        if (entity.position.x - neighbour.position.x) < -1.5 then
+                            local distancex = neighbour.position.x - entity.position.x
+                            for i = 1, distancex - 1, 1 do
+                                player.surface.create_entity {
+                                    name = 'picker-underground-pipe-marker-horizontal',
+                                    position = {entity.position.x + i, entity.position.y}
+                                }
+                            end
                         end
-                    end
-                    if (entity.position.y - neighbour.position.y) < -1.5 then
-                        local distancey = neighbour.position.y - entity.position.y
-                        for i = 1, distancey - 1, 1 do
-                            player.surface.create_entity {
-                                name = 'picker-underground-pipe-marker-vertical',
-                                position = {entity.position.x, entity.position.y + i}
-                            }
+                        if (entity.position.y - neighbour.position.y) < -1.5 then
+                            local distancey = neighbour.position.y - entity.position.y
+                            for i = 1, distancey - 1, 1 do
+                                player.surface.create_entity {
+                                    name = 'picker-underground-pipe-marker-vertical',
+                                    position = {entity.position.x, entity.position.y + i}
+                                }
+                            end
                         end
                     end
                 end
