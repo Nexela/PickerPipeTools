@@ -2,6 +2,7 @@
 --[ Pipe Highlighter ] -- Concept designed and code written by TheStaplergun (staplergun on mod portal) revised by Nexela
 -------------------------------------------------------------------------------
 
+local Player = require('lib/player')
 local Event = require('lib/event')
 
 local pipe_connections = {}
@@ -12,7 +13,7 @@ local function load_pipe_connections()
 end
 Event.register({Event.core_events.init, Event.core_events.load}, load_pipe_connections)
 
-local function showUndergroundSprites(event)
+local function show_underground_sprites(event)
     local player = game.players[event.player_index]
     local filter = {
         area = {{player.position.x - 80, player.position.y - 50}, {player.position.x + 80, player.position.y + 50}},
@@ -62,4 +63,26 @@ local function showUndergroundSprites(event)
         end
     end
 end
-script.on_event('picker-show-underground-paths', showUndergroundSprites)
+Event.register('picker-show-underground-paths', show_underground_sprites)
+--? Working on the recursive check.
+--[[
+local allowed_types =
+{
+    ["pipe"] = true,
+    ["pipe-to-ground"] = true,
+    ["pump"] = true
+}
+local function highlight_pipeline(event)
+    local player, _ = Player.get(event.player_index)
+    local selection = player.selected
+    if selection and allowed_types[selection.type] then
+        local highlight_table = {}
+        highlight_table[#highlight_table + 1] = selection
+        for _, entities in pairs(entity.neighbours) do
+            for _, neighbour in pairs(entities) do
+                if not highlight_table[neighbour] then
+                    highlight_table[#highlight_table + 1] = neighbour
+                end
+    end
+end
+Event.register('picker-highlight-pipeline', highlight_pipeline)]]--
