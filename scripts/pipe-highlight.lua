@@ -65,24 +65,39 @@ local function show_underground_sprites(event)
 end
 Event.register('picker-show-underground-paths', show_underground_sprites)
 --? Working on the recursive check.
---[[
+
 local allowed_types =
 {
     ["pipe"] = true,
     ["pipe-to-ground"] = true,
     ["pump"] = true
 }
+local function recurse_pipeline(entity, tracked_entities)
+    local tracked_entities = tracked_entities or {}
+    if not tracked_entities[entity.unit_number] then
+        tracked_entities[entity.unit_number] = entity
+    end
+    for _, entities in pairs(entity.neighbours) do
+        for _, neighbour in pairs(entities) do
+            if allowed_types[neighbour.type] and not tracked_entities[neighbour.unit_number] then
+                tracked_entities[neighbour.unit_number] = neighbour
+                recurse_pipeline(neighbour, tracked_entities)
+            end
+        end
+    end
+    return tracked_entities
+end
 local function highlight_pipeline(event)
     local player, _ = Player.get(event.player_index)
     local selection = player.selected
     if selection and allowed_types[selection.type] then
-        local highlight_table = {}
-        highlight_table[#highlight_table + 1] = selection
-        for _, entities in pairs(entity.neighbours) do
-            for _, neighbour in pairs(entities) do
-                if not highlight_table[neighbour] then
-                    highlight_table[#highlight_table + 1] = neighbour
-                end
+        local entities_to_highlight = recurse_pipeline(selection)
+        for _ , entity in pairs(entities_to_highlight) do
+            entity.surface.create_entity{
+                name = 'picker-pipe-marker-box-good',
+                position = entity.position
+            }
+        end
     end
 end
-Event.register('picker-highlight-pipeline', highlight_pipeline)]]--
+Event.register('picker-highlight-pipeline', highlight_pipeline)

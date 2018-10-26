@@ -17,6 +17,12 @@ data:extend{
         name = "picker-auto-clamp-toggle",
         key_sequence = "CONTROL + SHIFT + C",
         consuming = "script-only"
+    },
+    {
+        type = "custom-input",
+        name = "picker-highlight-pipeline",
+        key_sequence = "CONTROL + ALT + P",
+        consuming = "script-only"
     }
 }
 
