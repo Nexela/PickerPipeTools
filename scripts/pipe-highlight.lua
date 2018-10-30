@@ -127,22 +127,22 @@ local function draw_underground_sprites(entity, neighbour, type)
     local current_direction = get_direction(entity, neighbour)
     if delta_x < -1.5 then
         local distance_x = (neighbour_position.x - entity_position.x)
-        for i = 0.5, distance_x , 1 do
+        for i = 0.5, distance_x, 1 do
             entity.surface.create_entity {
                 name = pipe_highlight_markers[type][current_direction],
                 position = {entity_position.x + i, entity_position.y}
             }
         end
     elseif delta_x > 1.5 then
-        for i = 0.5, delta_x , 1 do
+        for i = 0.5, delta_x, 1 do
             entity.surface.create_entity {
                 name = pipe_highlight_markers[type][current_direction],
                 position = {entity_position.x - i, entity_position.y}
             }
         end
     elseif delta_y < -1.5 then
-        local distance_y = (neighbour_position.y - entity_position.y) + 1
-        for i = 0.5, distance_y , 1 do
+        local distance_y = (neighbour_position.y - entity_position.y)
+        for i = 0.5, distance_y, 1 do
             entity.surface.create_entity {
                 name = pipe_highlight_markers[type][current_direction],
                 position = {entity_position.x, entity_position.y + i}
