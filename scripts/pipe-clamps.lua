@@ -67,6 +67,11 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, autocl
     local new
     if table_entry <= 85 and clamped_name[table_entry] then
         local filter_table = entity.fluidbox.get_filter(1)
+        local event_data = {
+            entity = entity,
+            player_index = player.index,
+        }
+        script.raise_event(defines.events.script_raised_destroy, event_data)
         new =
             entity.surface.create_entity {
             name = entity.prototype.mineable_properties.products[1].name .. clamped_name[table_entry],
@@ -297,6 +302,11 @@ end
 local function un_clamp_pipe(entity, player, area_unclamp)
     local pos = entity.position
     local filter_table = entity.fluidbox.get_filter(1)
+    local event_data = {
+        entity = entity,
+        player_index = player.index,
+    }
+    script.raise_event(defines.events.script_raised_destroy, event_data)
     local new =
         entity.surface.create_entity {
         name = entity.prototype.mineable_properties.products[1].name,
