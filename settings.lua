@@ -12,5 +12,14 @@ data:extend{
         setting_type = 'startup',
         default_value = true,
         order = 'tool-pipe-cleaner'
+    },
+    {
+        type = 'int-setting',
+        name = 'picker-max-checked-pipes',
+        setting_type = 'runtime-global',
+        minimum_value = 100,
+        maximum_value = 5000,
+        default_value = 250,
+        order = 'picker-b'
     }
 }
