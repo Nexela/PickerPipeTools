@@ -142,7 +142,7 @@ local function unmark_pipeline(markers)
 end
 
 local function shift_in_direction(position_to_bump, current_direction, distance_to_shift)
-    local position = position_to_bump
+    local position = {x = position_to_bump.x, y = position_to_bump.y }
     if current_direction == defines.direction.north then
         position.y = position.y - distance_to_shift
         return position
@@ -161,7 +161,7 @@ end
 local function highlight_pipeline(starter_entity, player_index)
     local player, pdata = Player.get(player_index)
     --? Declare working tables
-    local read_entity_data = {true}
+    local read_entity_data = {}
     --((
     local all_entities_marked = {}
     local all_markers = {}
@@ -190,11 +190,51 @@ local function highlight_pipeline(starter_entity, player_index)
 
     local function draw_dash(position, type, current_direction, distance)
         markers_made = markers_made + 1
-        game.print(pipe_highlight_markers.dash[type][current_direction])
         all_markers[markers_made] = current_surface_create{
             name = pipe_highlight_markers.dash[type][current_direction],
             position = shift_in_direction(position, current_direction, distance)
         }
+    end
+
+    local function draw_dashes(entity_position, neighbour_position, current_direction, type)
+        local marker_name = pipe_highlight_markers.dash[type][current_direction]
+        if current_direction == defines.direction.south then
+            local delta_y = math.abs(entity_position.y - neighbour_position.y)
+            for i = 0.5, delta_y, 1 do
+                markers_made = markers_made + 1
+                all_markers[markers_made] = current_surface_create{
+                    name = marker_name,
+                    position = {entity_position.x, entity_position.y + i}
+                }
+            end
+        elseif current_direction == defines.direction.west then
+            local delta_x = (entity_position.x - neighbour_position.x)
+            for i = 0.5, delta_x, 1 do
+                markers_made = markers_made + 1
+                all_markers[markers_made] = current_surface_create{
+                    name = marker_name,
+                    position = {entity_position.x - i, entity_position.y}
+                }
+            end
+        elseif current_direction == defines.direction.east then
+            local distance_x = (neighbour_position.x - entity_position.x)
+            for i = 0.5, distance_x, 1 do
+                markers_made = markers_made + 1
+                all_markers[markers_made] = current_surface_create{
+                    name = marker_name,
+                    position = {entity_position.x + i, entity_position.y}
+                }
+            end
+        elseif current_direction == defines.direction.north then
+            local delta_y = (entity_position.y - neighbour_position.y)
+            for i = 0.5, delta_y, 1 do
+                markers_made = markers_made + 1
+                all_markers[markers_made] = current_surface_create{
+                    name = marker_name,
+                    position = {entity_position.x, entity_position.y - i}
+                }
+            end
+        end
     end
 --))
     local function read_pipeline(entity, entity_unit_number, entity_name, entity_type, entity_position)
@@ -257,8 +297,8 @@ local function highlight_pipeline(starter_entity, player_index)
             local current_neighbour = read_entity_data[neighbour_unit_number]
             if current_neighbour then
                 local current_direction = get_direction(entity[5], current_neighbour[5])
+                draw_dashes(entity[5], current_neighbour[5], current_direction, 'bad')
                 if current_neighbour[7] < 3 and not all_entities_marked[neighbour_unit_number] then
-                    draw_dash(entity[5], 'bad', current_direction, 0.5)
                     step_to_junction(neighbour_unit_number)
                 end
             end
@@ -278,10 +318,43 @@ local function highlight_pipeline(starter_entity, player_index)
             for _, neighbour in pairs(current_orphan[6]) do
                 local neighbour_unit_number = neighbour.unit_number
                 local current_neighbour = read_entity_data[neighbour_unit_number]
+                local current_direction = get_direction(current_orphan[5], current_neighbour[5])
+                draw_dashes(current_orphan[5], current_neighbour[5], current_direction, 'bad')
                 if current_neighbour[7] < 3 and not all_entities_marked[neighbour_unit_number] then
-                    local current_direction = get_direction(current_orphan[5], current_neighbour[5])
-                    draw_dash(current_orphan[5], 'bad', current_direction, 0.5)
                     step_to_junction(neighbour_unit_number)
+                end
+            end
+        end
+        for unit_number, current_entity in pairs(read_entity_data) do
+            if not all_entities_marked[unit_number] then
+                draw_dot(current_entity[5], 'normal', 0, 0)
+                all_entities_marked[unit_number] = true
+                for _, neighbour in pairs(current_entity[6]) do
+                    local neighbour_unit_number = neighbour.unit_number
+                    local current_neighbour = read_entity_data[neighbour_unit_number]
+                    if current_neighbour then
+                        if not all_entities_marked[neighbour_unit_number] then
+                            local current_direction = get_direction(current_entity[5], current_neighbour[5])
+                            draw_dashes(current_entity[5], current_neighbour[5], current_direction, 'normal')
+                        end
+                    end
+                end
+            end
+        end
+    else
+        for unit_number, current_entity in pairs(read_entity_data) do
+            if not all_entities_marked[unit_number] then
+                draw_dot(current_entity[5], 'good', 0, 0)
+                all_entities_marked[unit_number] = true
+                for _, neighbour in pairs(current_entity[6]) do
+                    local neighbour_unit_number = neighbour.unit_number
+                    local current_neighbour = read_entity_data[neighbour_unit_number]
+                    if current_neighbour then
+                        if not all_entities_marked[neighbour_unit_number] then
+                            local current_direction = get_direction(current_entity[5], current_neighbour[5])
+                            draw_dashes(current_entity[5], current_neighbour[5], current_direction, 'good')
+                        end
+                    end
                 end
             end
         end
@@ -300,7 +373,6 @@ local function get_pipeline(event)
         pdata.current_marker_table = {}
     end
     local selection = player.selected
-    --local last_entity = event.last_entity
     if selection then
         if allowed_types[selection.type] then
             if not pdata.current_pipeline_table[selection.unit_number] then
