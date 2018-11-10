@@ -305,7 +305,6 @@ for i, pipe in pairs(data.raw["pipe"]) do
             currentEntity.clamped = true
             currentEntity.localised_name = {"pipe-tools.clamped-name", pipe.name, pipeData.locale}
             currentEntity.placeable_by = {item = pipe.minable and pipe.minable.result or pipe.name, count = pipe.minable and pipe.minable.count or 1}
-            --currentEntity.placeable_by = {item = pipe.name, count = pipe.minable and pipe.minable.count or 1}
             currentEntity.icons = {
                 {
                     icon = currentEntity.icon or data.raw["pipe"]["pipe"].icon,
