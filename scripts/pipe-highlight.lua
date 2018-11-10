@@ -1,6 +1,8 @@
 -------------------------------------------------------------------------------
---[ Pipe Highlighter ] -- Concept designed and code written by TheStaplergun (staplergun on mod portal) revised by Nexela
+--[[Pipe Highlighter]]--
 -------------------------------------------------------------------------------
+-- Concept designed and code written by TheStaplergun (staplergun on mod portal)
+-- STDLib and code reviews provided by Nexela
 
 local Player = require('lib/player')
 local Event = require('lib/event')
@@ -74,9 +76,6 @@ local function get_ns(delta_y)
 end
 
 local function get_direction(entity_position, neighbour_position)
-    --[[if not entity.valid or not neighbour.valid then
-        return
-    end]]--
     local delta_x = entity_position.x - neighbour_position.x
     local delta_y = entity_position.y - neighbour_position.y
     if delta_x ~= 0 and delta_y == 0 then
@@ -92,6 +91,24 @@ local function get_direction(entity_position, neighbour_position)
     end
 end
 
+local directional_table = {
+    [0] = '',
+    [1] = '-n',
+    [4] = '-e',
+    [5] = '-ne',
+    [16] = '-s',
+    [17] = '-ns',
+    [20] = '-se',
+    [21] = '-nse',
+    [64] = '-w',
+    [65] = '-nw',
+    [68] = '-ew',
+    [69] = '-new',
+    [80] = '-sw',
+    [81] = '-nsw',
+    [84] = '-sew',
+    [85] = '-nsew'
+}
 local allowed_types =
 {
     ["pipe"] = true,
@@ -141,6 +158,18 @@ local function unmark_pipeline(markers)
     end
 end
 
+local function reverse_direction(current_direction)
+    if current_direction == defines.direction.north then
+        return defines.direction.south
+    elseif current_direction == defines.direction.east then
+        return defines.direction.west
+    elseif current_direction == defines.direction.west then
+        return defines.direction.east
+    elseif current_direction == defines.direction.south then
+        return defines.direction.north
+    end
+end
+
 local function shift_in_direction(position_to_bump, current_direction, distance_to_shift)
     local position = {x = position_to_bump.x, y = position_to_bump.y }
     if current_direction == defines.direction.north then
@@ -180,6 +209,14 @@ local function highlight_pipeline(starter_entity, player_index)
     local pipes_read = 0
     local markers_made = 0
 
+    local function draw_marker(position, type, directions)
+        markers_made = markers_made + 1
+        all_markers[markers_made] = current_surface_create{
+            name = pipe_highlight_markers.dot[type] .. directional_table[directions],
+            position = position
+        }
+    end
+
     local function draw_dot(position, type, current_direction, distance)
         markers_made = markers_made + 1
         all_markers[markers_made] = current_surface_create{
@@ -196,6 +233,7 @@ local function highlight_pipeline(starter_entity, player_index)
         }
     end
 
+    --? Handles drawing dashes between two directly connected pipes, up to any type of pipe to ground. Entirely removes lots of "If/then" statements
     local function draw_dashes(entity_position, neighbour_position, current_direction, type)
         local marker_name = pipe_highlight_markers.dash[type][current_direction]
         if current_direction == defines.direction.south then
@@ -237,68 +275,85 @@ local function highlight_pipeline(starter_entity, player_index)
         end
     end
 --))
-    local function read_pipeline(entity, entity_unit_number, entity_name, entity_type, entity_position)
+    local function get_directions(entity_position, entity_neighbours)
+        local table_entry = 0
+        for _, neighbour in pairs(entity_neighbours) do
+            local neighbour_unit_number = neighbour.unit_number
+            local current_neighbour = read_entity_data[neighbour_unit_number]
+            if current_neighbour then
+                table_entry = table_entry + (2 ^ get_direction(entity_position, current_neighbour[1]))
+            else
+                table_entry = table_entry + (2 ^ get_direction(entity_position, neighbour.position))
+            end
+        end
+        return table_entry
+    end
+
+
+    --? Gather and cache pipeline info.
+    local function read_pipeline(entity, entity_unit_number, entity_position)
         local entity_neighbours = entity.neighbours[1]
         pipes_read = pipes_read + 1
-        --read_entities[entity_unit_number] = true
+        --? Stored as indexed array internally, due to faster table creation and referencing.
         read_entity_data[entity_unit_number] =
             {
                 -- 1
-                entity,
-                -- 2
-                entity_unit_number,
-                -- 3
-                entity_name,
-                -- 4
-                entity_type,
-                -- 5
                 entity_position,
-                -- 6
+                -- 2
                 entity_neighbours,
-                -- 7
-                #entity_neighbours
+                -- 3
             }
+        --? Checks for orpahns
         if #entity_neighbours < 2 then
             orphan_counter = orphan_counter + 1
             tracked_orphans[entity_unit_number] = true
         end
+        --? Ensures reading and marking no more than maximum pipes per the setting.
         if pipes_read < max_pipes then
             for _, neighbour in pairs(entity_neighbours) do
+                --? Pre-cache all data
                 local neighbour_type = neighbour.type
                 local neighbour_name = neighbour.name
                 local neighbour_position = neighbour.position
                 local neighbour_unit_number = neighbour.unit_number
+                --? Make sure we stick with pipes/pumps and don't read disallowed names
                 if allowed_types[neighbour_type] and not not_allowed_names[neighbour_name] then
+                    --? Verify we haven't been here before
                     if not read_entity_data[neighbour_unit_number] then
-                        read_pipeline(neighbour, neighbour_unit_number, neighbour_name, neighbour_type, neighbour_position)
+                        --? Add to directional table for this pipe
+                        --read_entity_data[entity_unit_number][3] = read_entity_data[entity_unit_number][3] + (2 ^ get_direction(entity_position, neighbour_position))
+                        --? Step to next pipe
+                        read_pipeline(neighbour, neighbour_unit_number, neighbour_position)
                     end
-                else
+                else --? Mark objects that aren't allowed to be traversed to.
                     local current_direction = get_direction(entity_position, neighbour_position)
-                    draw_dash(entity_position, 'good', current_direction, 0.5)
-                    draw_dot(entity_position, 'good', current_direction, 0.5)
+                    draw_marker(shift_in_direction(entity_position, current_direction, 1), 'good', 2^reverse_direction(current_direction))
                     all_entities_marked[neighbour_unit_number] = true
                 end
             end
         end
     end
 
+    --? Entry point to read pipeline
     local starter_unit_number = starter_entity.unit_number
-    local starter_entity_name = starter_entity.name
-    local starter_entity_type = starter_entity.type
+    --local starter_entity_name = starter_entity.name
+    --local starter_entity_type = starter_entity.type
     local starter_entity_position = starter_entity.position
-    read_pipeline(starter_entity, starter_unit_number, starter_entity_name, starter_entity_type, starter_entity_position)
+    read_pipeline(starter_entity, starter_unit_number, starter_entity_position)
 
     local function step_to_junction(entity_unit_number)
+        --? Grab cached data. Removes need for API calls alltogether at this stage.
         local entity = read_entity_data[entity_unit_number]
-        draw_dot(entity[5], 'bad', 0, 0)
+        draw_marker(entity[1], 'bad', get_directions(entity[1], entity[2]))
+        --draw_dot(entity[1], 'bad', 0, 0)
         all_entities_marked[entity_unit_number] = true
-        for _, neighbour in pairs(entity[6]) do
+        for _, neighbour in pairs(entity[2]) do
             local neighbour_unit_number = neighbour.unit_number
             local current_neighbour = read_entity_data[neighbour_unit_number]
             if current_neighbour then
-                local current_direction = get_direction(entity[5], current_neighbour[5])
-                draw_dashes(entity[5], current_neighbour[5], current_direction, 'bad')
-                if current_neighbour[7] < 3 and not all_entities_marked[neighbour_unit_number] then
+                --local current_direction = get_direction(entity[1], current_neighbour[1])
+                --draw_dashes(entity[1], current_neighbour[1], current_direction, 'bad')
+                if #current_neighbour[2] < 3 and not all_entities_marked[neighbour_unit_number] then
                     step_to_junction(neighbour_unit_number)
                 end
             end
@@ -306,56 +361,40 @@ local function highlight_pipeline(starter_entity, player_index)
     end
 
     if orphan_counter > 0 then
+        player.print(orphan_counter .. " dead end pipes found.")
         for unit_number,_ in pairs(tracked_orphans) do
             local current_orphan = read_entity_data[unit_number]
             markers_made = markers_made + 1
             all_markers[markers_made] = current_surface_create{
                 name = 'picker-pipe-marker-box-bad',
-                position = current_orphan[5]
+                position = current_orphan[1]
             }
-            draw_dot(current_orphan[5], 'bad', 0, 0)
+            draw_marker(current_orphan[1], 'bad', get_directions(current_orphan[1], current_orphan[2]))
+            --draw_dot(current_orphan[1], 'bad', 0, 0)
             all_entities_marked[unit_number] = true
-            for _, neighbour in pairs(current_orphan[6]) do
+            for _, neighbour in pairs(current_orphan[2]) do
                 local neighbour_unit_number = neighbour.unit_number
                 local current_neighbour = read_entity_data[neighbour_unit_number]
-                local current_direction = get_direction(current_orphan[5], current_neighbour[5])
-                draw_dashes(current_orphan[5], current_neighbour[5], current_direction, 'bad')
-                if current_neighbour[7] < 3 and not all_entities_marked[neighbour_unit_number] then
-                    step_to_junction(neighbour_unit_number)
+                if current_neighbour then
+                    --local current_direction = get_direction(current_orphan[1], current_neighbour[1])
+                    --draw_dashes(current_orphan[1], current_neighbour[1], current_direction, 'bad')
+                    if #current_neighbour[2] < 3 and not all_entities_marked[neighbour_unit_number] then
+                        step_to_junction(neighbour_unit_number)
+                    end
                 end
             end
         end
         for unit_number, current_entity in pairs(read_entity_data) do
             if not all_entities_marked[unit_number] then
-                draw_dot(current_entity[5], 'normal', 0, 0)
+                draw_marker(current_entity[1], 'normal', get_directions(current_entity[1], current_entity[2]))
                 all_entities_marked[unit_number] = true
-                for _, neighbour in pairs(current_entity[6]) do
-                    local neighbour_unit_number = neighbour.unit_number
-                    local current_neighbour = read_entity_data[neighbour_unit_number]
-                    if current_neighbour then
-                        if not all_entities_marked[neighbour_unit_number] then
-                            local current_direction = get_direction(current_entity[5], current_neighbour[5])
-                            draw_dashes(current_entity[5], current_neighbour[5], current_direction, 'normal')
-                        end
-                    end
-                end
             end
         end
     else
         for unit_number, current_entity in pairs(read_entity_data) do
             if not all_entities_marked[unit_number] then
-                draw_dot(current_entity[5], 'good', 0, 0)
+                draw_marker(current_entity[1], 'good', get_directions(current_entity[1], current_entity[2]))
                 all_entities_marked[unit_number] = true
-                for _, neighbour in pairs(current_entity[6]) do
-                    local neighbour_unit_number = neighbour.unit_number
-                    local current_neighbour = read_entity_data[neighbour_unit_number]
-                    if current_neighbour then
-                        if not all_entities_marked[neighbour_unit_number] then
-                            local current_direction = get_direction(current_entity[5], current_neighbour[5])
-                            draw_dashes(current_entity[5], current_neighbour[5], current_direction, 'good')
-                        end
-                    end
-                end
             end
         end
     end
@@ -392,35 +431,8 @@ local function get_pipeline(event)
         pdata.all_markers = nil
     end
 end
-Event.register('picker-highlight-pipeline', get_pipeline)
+
 
 Event.register(defines.events.on_selected_entity_changed, get_pipeline)
 
---[[local function check_for_reassessment_mined(event)
-    local _,pdata = Player.get(event.player_index)
-    local entity = event.entity
-    if pdata.current_pipeline_table and pdata.current_pipeline_table[entity.unit_number] then
-        unmark_pipeline(pdata)
-        pdata.current_pipeline_table = nil
-        pdata.all_markers = nil
-        highlight_pipeline(entity.neighbours[1][1], event.player_index, entity)
-    end
-end
-Event.register(defines.events.on_player_mined_entity, check_for_reassessment_mined)
-
-local function check_for_reassessment_built(event)
-    local _,pdata = Player.get(event.player_index)
-    local entity = event.created_entity
-    for _ , entities in pairs(entity.neighbours) do
-        for _, neighbour in pairs(entities) do
-            if pdata.current_pipeline_table and pdata.current_pipeline_table[neighbour.unit_number] then
-                unmark_pipeline(pdata)
-                pdata.current_pipeline_table = nil
-                pdata.all_markers = nil
-                highlight_pipeline(entity, event.player_index)
-            end
-        end
-    end
-end
-Event.register(defines.events.on_built_entity, check_for_reassessment_built)
-]]--
+Event.register('picker-highlight-pipeline', get_pipeline)
