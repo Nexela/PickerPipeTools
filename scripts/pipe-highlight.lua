@@ -17,7 +17,7 @@ Event.register({Event.core_events.init, Event.core_events.load}, load_pipe_conne
 
 local function show_underground_sprites(event)
     local player = game.players[event.player_index]
-    local current_surface_create = player.surface
+    local create = player.surface
     local filter = {
         area = {{player.position.x - 80, player.position.y - 50}, {player.position.x + 80, player.position.y + 50}},
         type = {'pipe-to-ground', 'pump'},
@@ -51,12 +51,12 @@ local function show_underground_sprites(event)
                     end
                 end
                 if (maxNeighbors == neighbour_count) then
-                    current_surface_create{
+                    create{
                         name = 'picker-pipe-marker-box-good',
                         position = entity.position
                     }
                 elseif (neighbour_count < maxNeighbors) then
-                    current_surface_create{
+                    create{
                         name = 'picker-pipe-marker-box-bad',
                         position = entity.position
                     }
@@ -109,6 +109,7 @@ local directional_table = {
     [84] = '-sew',
     [85] = '-nsew'
 }
+--? Tables for read-limits
 local allowed_types =
 {
     ["pipe"] = true,
@@ -120,6 +121,15 @@ local not_allowed_names =
     ["factory-fluid-dummy-connector"] = true,
     ["factory-fluid-dummy-connector-south"] = true,
 }
+
+--? Table for types and names to draw dashes between
+local draw_dashes_types = {
+    ['pipe-to-ground'] = true,
+}
+local draw_dashes_names = {
+    ['underground-mini-pump'] = true,
+}
+
 local pipe_highlight_markers = {
     dash = {
         ['normal'] = {
@@ -171,7 +181,7 @@ local function reverse_direction(current_direction)
 end
 
 local function shift_in_direction(position_to_bump, current_direction, distance_to_shift)
-    local position = {x = position_to_bump.x, y = position_to_bump.y }
+    local position = {x = position_to_bump.x, y = position_to_bump.y}
     if current_direction == defines.direction.north then
         position.y = position.y - distance_to_shift
         return position
@@ -191,7 +201,6 @@ local function highlight_pipeline(starter_entity, player_index)
     local player, pdata = Player.get(player_index)
     --? Declare working tables
     local read_entity_data = {}
-    --((
     local all_entities_marked = {}
     local all_markers = {}
     local tracked_orphans = {}
@@ -202,7 +211,7 @@ local function highlight_pipeline(starter_entity, player_index)
 
     --? Setting and cache create entity function
     local max_pipes = settings.global['picker-max-checked-pipes'].value
-    local current_surface_create = starter_entity.surface.create_entity
+    local create = starter_entity.surface.create_entity
 
     --? Variables
     local orphan_counter = 0
@@ -211,15 +220,15 @@ local function highlight_pipeline(starter_entity, player_index)
 
     local function draw_marker(position, type, directions)
         markers_made = markers_made + 1
-        all_markers[markers_made] = current_surface_create{
+        all_markers[markers_made] = create{
             name = pipe_highlight_markers.dot[type] .. directional_table[directions],
             position = position
         }
     end
 
-    local function draw_dot(position, type, current_direction, distance)
+    --[[local function draw_dot(position, type, current_direction, distance)
         markers_made = markers_made + 1
-        all_markers[markers_made] = current_surface_create{
+        all_markers[markers_made] = create{
             name = pipe_highlight_markers.dot[type],
             position = shift_in_direction(position, current_direction, distance)
         }
@@ -227,13 +236,13 @@ local function highlight_pipeline(starter_entity, player_index)
 
     local function draw_dash(position, type, current_direction, distance)
         markers_made = markers_made + 1
-        all_markers[markers_made] = current_surface_create{
+        all_markers[markers_made] = create{
             name = pipe_highlight_markers.dash[type][current_direction],
             position = shift_in_direction(position, current_direction, distance)
         }
-    end
+    end]]--
 
-    --? Handles drawing dashes between two directly connected pipes, up to any type of pipe to ground. Entirely removes lots of "If/then" statements
+    --? Handles drawing dashes between two pipe to ground.
     local function draw_dashes(entity_position, neighbour_position, type)
         local current_direction = get_direction(entity_position, neighbour_position)
         local marker_name = pipe_highlight_markers.dash[type][current_direction]
@@ -241,7 +250,7 @@ local function highlight_pipeline(starter_entity, player_index)
             local delta_y = math.abs(entity_position.y - neighbour_position.y)
             for i = 0.5, delta_y, 1 do
                 markers_made = markers_made + 1
-                all_markers[markers_made] = current_surface_create{
+                all_markers[markers_made] = create{
                     name = marker_name,
                     position = {entity_position.x, entity_position.y + i}
                 }
@@ -250,7 +259,7 @@ local function highlight_pipeline(starter_entity, player_index)
             local delta_x = (entity_position.x - neighbour_position.x)
             for i = 0.5, delta_x, 1 do
                 markers_made = markers_made + 1
-                all_markers[markers_made] = current_surface_create{
+                all_markers[markers_made] = create{
                     name = marker_name,
                     position = {entity_position.x - i, entity_position.y}
                 }
@@ -259,7 +268,7 @@ local function highlight_pipeline(starter_entity, player_index)
             local distance_x = (neighbour_position.x - entity_position.x)
             for i = 0.5, distance_x, 1 do
                 markers_made = markers_made + 1
-                all_markers[markers_made] = current_surface_create{
+                all_markers[markers_made] = create{
                     name = marker_name,
                     position = {entity_position.x + i, entity_position.y}
                 }
@@ -268,14 +277,14 @@ local function highlight_pipeline(starter_entity, player_index)
             local delta_y = (entity_position.y - neighbour_position.y)
             for i = 0.5, delta_y, 1 do
                 markers_made = markers_made + 1
-                all_markers[markers_made] = current_surface_create{
+                all_markers[markers_made] = create{
                     name = marker_name,
                     position = {entity_position.x, entity_position.y - i}
                 }
             end
         end
     end
---))
+
     local function get_directions(entity_position, entity_neighbours)
         local table_entry = 0
         for _, neighbour in pairs(entity_neighbours) do
@@ -307,7 +316,7 @@ local function highlight_pipeline(starter_entity, player_index)
                 -- 4
                 entity_name
             }
-        --? Checks for orpahns
+        --? Checks for orphahns
         if #entity_neighbours < 2 then
             orphan_counter = orphan_counter + 1
             tracked_orphans[entity_unit_number] = true
@@ -347,17 +356,14 @@ local function highlight_pipeline(starter_entity, player_index)
         --? Grab cached data. Removes need for API calls alltogether at this stage.
         local entity = read_entity_data[entity_unit_number]
         draw_marker(entity[1], 'bad', get_directions(entity[1], entity[2]))
-        --draw_dot(entity[1], 'bad', 0, 0)
         all_entities_marked[entity_unit_number] = true
         for _, neighbour in pairs(entity[2]) do
             local neighbour_unit_number = neighbour.unit_number
             local current_neighbour = read_entity_data[neighbour_unit_number]
             if current_neighbour then
-                --local current_direction = get_direction(entity[1], current_neighbour[1])
-                --draw_dashes(entity[1], current_neighbour[1], current_direction, 'bad')
                 if #current_neighbour[2] < 3 and not all_entities_marked[neighbour_unit_number] then
-                    if entity[3] == 'pipe-to-ground' or entity[4] == 'underground-mini-pump' then
-                        if current_neighbour[3] == 'pipe-to-ground' or current_neighbour[4] == 'underground-mini-pump' then
+                    if draw_dashes_types[entity[3]] or draw_dashes_names[entity[4]] then
+                        if draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]] then
                             draw_dashes(entity[1], current_neighbour[1], 'bad')
                         end
                     end
@@ -372,7 +378,7 @@ local function highlight_pipeline(starter_entity, player_index)
         for unit_number,_ in pairs(tracked_orphans) do
             local current_orphan = read_entity_data[unit_number]
             markers_made = markers_made + 1
-            all_markers[markers_made] = current_surface_create{
+            all_markers[markers_made] = create{
                 name = 'picker-pipe-marker-box-bad',
                 position = current_orphan[1]
             }
@@ -382,11 +388,9 @@ local function highlight_pipeline(starter_entity, player_index)
                 local neighbour_unit_number = neighbour.unit_number
                 local current_neighbour = read_entity_data[neighbour_unit_number]
                 if current_neighbour then
-                    --local current_direction = get_direction(current_orphan[1], current_neighbour[1])
-                    --draw_dashes(current_orphan[1], current_neighbour[1], current_direction, 'bad')
                     if #current_neighbour[2] < 3 and not all_entities_marked[neighbour_unit_number] then
-                        if current_orphan[3] == 'pipe-to-ground' or current_orphan[4] == 'underground-mini-pump' then
-                            if current_neighbour[3] == 'pipe-to-ground' or current_neighbour[4] == 'underground-mini-pump' then
+                        if draw_dashes_types[current_orphan[3]] or draw_dashes_names[current_orphan[4]] then
+                            if draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]] then
                                 draw_dashes(current_orphan[1], current_neighbour[1], 'bad')
                             end
                         end
@@ -397,11 +401,11 @@ local function highlight_pipeline(starter_entity, player_index)
         end
         for unit_number, current_entity in pairs(read_entity_data) do
             if not all_entities_marked[unit_number] then
-                for _, neighbour in pairs(current_entity[2]) do
-                    local neighbour_unit_number = neighbour.unit_number
-                    local current_neighbour = read_entity_data[neighbour_unit_number]
-                    if current_entity[3] == 'pipe-to-ground' or current_entity[4] == 'underground-mini-pump' then
-                        if current_neighbour[3] == 'pipe-to-ground' or current_neighbour[4] == 'underground-mini-pump' then
+                if draw_dashes_types[current_entity[3]] or draw_dashes_names[current_entity[4]] then
+                    for _, neighbour in pairs(current_entity[2]) do
+                        local neighbour_unit_number = neighbour.unit_number
+                        local current_neighbour = read_entity_data[neighbour_unit_number]
+                        if draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]] then
                             draw_dashes(current_entity[1], current_neighbour[1], 'normal')
                         end
                     end
@@ -413,11 +417,11 @@ local function highlight_pipeline(starter_entity, player_index)
     else
         for unit_number, current_entity in pairs(read_entity_data) do
             if not all_entities_marked[unit_number] then
-                for _, neighbour in pairs(current_entity[2]) do
-                    local neighbour_unit_number = neighbour.unit_number
-                    local current_neighbour = read_entity_data[neighbour_unit_number]
-                    if current_entity[3] == 'pipe-to-ground' or current_entity[4] == 'underground-mini-pump' then
-                        if current_neighbour[3] == 'pipe-to-ground' or current_neighbour[4] == 'underground-mini-pump' then
+                if draw_dashes_types[current_entity[3]] or draw_dashes_names[current_entity[4]] then
+                    for _, neighbour in pairs(current_entity[2]) do
+                        local neighbour_unit_number = neighbour.unit_number
+                        local current_neighbour = read_entity_data[neighbour_unit_number]
+                        if draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]] then
                             draw_dashes(current_entity[1], current_neighbour[1], 'good')
                         end
                     end
