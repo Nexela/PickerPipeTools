@@ -172,7 +172,7 @@ data:extend {
                 frame_count = 1,
                 direction_count = 1,
                 ----scale = 0.5,
-                shift = {0, -0.5},
+                shift = {0, -0.6},
                 filename = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-horizontal.png'
             }
         }
@@ -191,7 +191,7 @@ data:extend {
                 frame_count = 1,
                 direction_count = 1,
                 ----scale = 0.5,
-                shift = {-0.5, 0},
+                shift = {-0.5, -0.1},
                 filename = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-vertical.png'
             }
         }
@@ -210,7 +210,7 @@ data:extend {
                 frame_count = 1,
                 direction_count = 1,
                 ----scale = 0.5,
-                shift = {0, -0.5},
+                shift = {0, -0.6},
                 filename = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-horizontal-good.png'
             }
         }
@@ -229,7 +229,7 @@ data:extend {
                 frame_count = 1,
                 direction_count = 1,
                 ----scale = 0.5,
-                shift = {-0.5, 0},
+                shift = {-0.5, -0.1},
                 filename = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-vertical-good.png'
             }
         }
@@ -248,7 +248,7 @@ data:extend {
                 frame_count = 1,
                 direction_count = 1,
                 ----scale = 0.5,
-                shift = {0, -0.5},
+                shift = {0, -0.6},
                 filename = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-horizontal-bad.png'
             }
         }
@@ -267,7 +267,7 @@ data:extend {
                 frame_count = 1,
                 direction_count = 1,
                 ----scale = 0.5,
-                shift = {-0.5, 0},
+                shift = {-0.5, -0.1},
                 filename = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-vertical-bad.png'
             }
         }
