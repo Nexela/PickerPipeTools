@@ -81,10 +81,10 @@ function Position.copy(pos)
 end
 
 --- Loads the metatable into the passed position without creating a new one.
+-- Always assumes a valid position is passed
 -- @tparam Concepts.Position pos the position to load the metatable onto
 -- @treturn Concepts.Position the position with metatable attached
 function Position.load(pos)
-    Is.Assert.Position(pos, 'position missing or malformed')
     return setmetatable(pos, Position._mt)
 end
 
@@ -99,11 +99,6 @@ end
 -- @tparam string pos_string the position to convert
 -- @treturn Concepts.Position
 function Position.from_key(pos_string)
-    -- local t = string.split(pos_string, '/')
-    -- for k, v in pairs(t) do
-    --     t[k] = tonumber(v)
-    -- end
-    -- return Position(t)
     return Position(string.split(pos_string, '/', false, tonumber))
 end
 
@@ -198,7 +193,7 @@ end
 function Position.offset_along_line(pos1, pos2, distance_from_pos2)
     pos1, pos2 = Position(pos1), Position(pos2)
     distance_from_pos2 = distance_from_pos2 or 0
-
+    --TODO FIXME swapped x, y around correctly in Position.atan2 needs to be fixed here
     local angle = pos1:atan2(pos2)
     local veclength = pos1:distance(pos2) - distance_from_pos2
 
@@ -453,7 +448,7 @@ end
 -- @treturn number
 function Position.atan2(pos1, pos2)
     pos1, pos2 = Position(pos1), Position(pos2)
-    return math.atan2(pos2.y - pos1.y, pos2.x - pos1.x)
+    return math.atan2(pos2.x - pos1.x, pos2.y - pos1.y)
 end
 
 --- Is a position inside of an area.
@@ -493,6 +488,14 @@ end
 function Position.unpack(pos)
     pos = Position.new(pos)
     return pos.x, pos.y
+end
+
+--- Packs a position into an array.
+-- @tparam Concepts.Position pos the position to pack
+-- @treturn array
+function Position.pack(pos)
+    pos = Position(pos)
+    return {pos.x, pos.y}
 end
 
 --- Tests whether or not the two given positions are equal.
@@ -576,6 +579,17 @@ function Position.opposite_direction(direction)
     return (direction + 4) % 8
 end
 
+--- Returns the direction to a position
+-- @tparam Concepts.Position pos1
+-- @tparam Concepts.Position pos2
+-- @tparam boolean eight_way return the eight way direction
+-- @treturn defines.direction
+function Position.direction_to(pos1, pos2, eight_way)
+    pos1, pos2 = Position(pos1), Position(pos2)
+    local orientation_to_dir = eight_way and Position.orientation_to_8way or Position.orientation_to_4way
+    return orientation_to_dir(((-(pos1:atan2(pos2)) / math.pi) + 1) / 2)
+end
+
 --- Returns the next direction.
 --> For entities that only support two directions, see @{opposite_direction}.
 -- @tparam defines.direction direction the starting direction
@@ -609,8 +623,8 @@ function Position.direction_to_orientation(direction)
 end
 --- @section end
 
--- Some of these are qusi duplicates of the named methods, however the
--- the methods return new positions as opposed to mutating.
+-- Some of these are qusi duplicates of the named methods, however
+-- these methods return new positions as opposed to mutating.
 local function __add(pos1, pos2)
     pos1, pos2 = Position(pos1), Position(pos2)
     return Position.load({x = pos1.x + pos2.x, y = pos1.y + pos2.y})

@@ -6,6 +6,7 @@
 
 local Player = require('lib/player')
 local Event = require('lib/event')
+local Position = require('lib/position')
 
 local pipe_connections = {}
 local function load_pipe_connections()
@@ -17,7 +18,7 @@ Event.register({Event.core_events.init, Event.core_events.load}, load_pipe_conne
 
 local function show_underground_sprites(event)
     local player = game.players[event.player_index]
-    local create = player.surface
+    local create = player.surface.create_entity
     local filter = {
         area = {{player.position.x - 80, player.position.y - 50}, {player.position.x + 80, player.position.y + 50}},
         type = {'pipe-to-ground', 'pump'},
@@ -67,30 +68,6 @@ local function show_underground_sprites(event)
 end
 Event.register('picker-show-underground-paths', show_underground_sprites)
 
-local function get_ew(delta_x)
-    return delta_x > 0 and defines.direction.west or defines.direction.east
-end
-
-local function get_ns(delta_y)
-    return delta_y > 0 and defines.direction.north or defines.direction.south
-end
-
-local function get_direction(entity_position, neighbour_position)
-    local delta_x = entity_position.x - neighbour_position.x
-    local delta_y = entity_position.y - neighbour_position.y
-    if delta_x ~= 0 and delta_y == 0 then
-        return get_ew(delta_x)
-    elseif delta_x == 0 and delta_y ~= 0 then
-        return get_ns(delta_y)
-    elseif delta_x ~= 0 and delta_y ~= 0 then
-        if math.abs(delta_x) > math.abs(delta_y) then
-            return get_ew(delta_x)
-        elseif math.abs(delta_x) < math.abs(delta_y) then
-            return get_ns(delta_y)
-        end
-    end
-end
-
 local directional_table = {
     [0] = '',
     [1] = '-n',
@@ -109,6 +86,7 @@ local directional_table = {
     [84] = '-sew',
     [85] = '-nsew'
 }
+
 --? Tables for read-limits
 local allowed_types =
 {
@@ -116,6 +94,7 @@ local allowed_types =
     ["pipe-to-ground"] = true,
     ["pump"] = true
 }
+
 local not_allowed_names =
 {
     ["factory-fluid-dummy-connector"] = true,
@@ -160,40 +139,9 @@ local pipe_highlight_markers = {
 
 local function unmark_pipeline(markers)
     if markers then
-        for _ , entities in pairs(markers) do
-            if entities.valid then
-                entities.destroy()
-            end
+        for _ , entity in pairs(markers) do
+            entity.destroy()
         end
-    end
-end
-
-local function reverse_direction(current_direction)
-    if current_direction == defines.direction.north then
-        return defines.direction.south
-    elseif current_direction == defines.direction.east then
-        return defines.direction.west
-    elseif current_direction == defines.direction.west then
-        return defines.direction.east
-    elseif current_direction == defines.direction.south then
-        return defines.direction.north
-    end
-end
-
-local function shift_in_direction(position_to_bump, current_direction, distance_to_shift)
-    local position = {x = position_to_bump.x, y = position_to_bump.y}
-    if current_direction == defines.direction.north then
-        position.y = position.y - distance_to_shift
-        return position
-    elseif current_direction == defines.direction.east then
-        position.x = position.x + distance_to_shift
-        return position
-    elseif current_direction == defines.direction.west then
-        position.x = position.x - distance_to_shift
-        return position
-    elseif current_direction == defines.direction.south then
-        position.y = position.y + distance_to_shift
-        return position
     end
 end
 
@@ -210,6 +158,7 @@ local function highlight_pipeline(starter_entity, player_index)
     pdata.current_pipeline_table = all_entities_marked
 
     --? Setting and cache create entity function
+    -- TODO max_pipes can be cached at the TLD and updated in settings changed event
     local max_pipes = settings.global['picker-max-checked-pipes'].value
     local create = starter_entity.surface.create_entity
 
@@ -226,26 +175,11 @@ local function highlight_pipeline(starter_entity, player_index)
         }
     end
 
-    --[[local function draw_dot(position, type, current_direction, distance)
-        markers_made = markers_made + 1
-        all_markers[markers_made] = create{
-            name = pipe_highlight_markers.dot[type],
-            position = shift_in_direction(position, current_direction, distance)
-        }
-    end
-
-    local function draw_dash(position, type, current_direction, distance)
-        markers_made = markers_made + 1
-        all_markers[markers_made] = create{
-            name = pipe_highlight_markers.dash[type][current_direction],
-            position = shift_in_direction(position, current_direction, distance)
-        }
-    end]]--
-
     --? Handles drawing dashes between two pipe to ground.
     local function draw_dashes(entity_position, neighbour_position, type)
-        local current_direction = get_direction(entity_position, neighbour_position)
+        local current_direction = Position.direction_to(entity_position, neighbour_position)
         local marker_name = pipe_highlight_markers.dash[type][current_direction]
+        -- TODO lots of repetative code here....
         if current_direction == defines.direction.south then
             local delta_y = math.abs(entity_position.y - neighbour_position.y)
             for i = 0.5, delta_y, 1 do
@@ -291,14 +225,13 @@ local function highlight_pipeline(starter_entity, player_index)
             local neighbour_unit_number = neighbour.unit_number
             local current_neighbour = read_entity_data[neighbour_unit_number]
             if current_neighbour then
-                table_entry = table_entry + (2 ^ get_direction(entity_position, current_neighbour[1]))
+                table_entry = table_entry + (2 ^ Position.direction_to(entity_position, current_neighbour[1]))
             else
-                table_entry = table_entry + (2 ^ get_direction(entity_position, neighbour.position))
+                table_entry = table_entry + (2 ^ Position.direction_to(entity_position, neighbour.position))
             end
         end
         return table_entry
     end
-
 
     --? Gather and cache pipeline info.
     local function read_pipeline(entity, entity_unit_number, entity_position, entity_type, entity_name)
@@ -307,14 +240,10 @@ local function highlight_pipeline(starter_entity, player_index)
         --? Stored as indexed array internally.
         read_entity_data[entity_unit_number] =
             {
-                -- 1
-                entity_position,
-                -- 2
-                entity_neighbours,
-                -- 3
-                entity_type,
-                -- 4
-                entity_name
+                [1] = entity_position,
+                [2] = entity_neighbours,
+                [3] = entity_type,
+                [4] = entity_name
             }
         --? Checks for orphahns
         if #entity_neighbours < 2 then
@@ -337,8 +266,8 @@ local function highlight_pipeline(starter_entity, player_index)
                         read_pipeline(neighbour, neighbour_unit_number, neighbour_position, neighbour_name)
                     end
                 else --? Mark objects that aren't allowed to be traversed to. (Endpoints such as storage-tank, oil-refinery, etc.)
-                    local current_direction = get_direction(entity_position, neighbour_position, neighbour_type)
-                    draw_marker(shift_in_direction(entity_position, current_direction, 1), 'good', 2^reverse_direction(current_direction))
+                    local current_direction = Position.direction_to(entity_position, neighbour_position, neighbour_type)
+                    draw_marker(Position.translate(entity_position, current_direction, 1), 'good', 2^Position.opposite_direction(current_direction))
                     all_entities_marked[neighbour_unit_number] = true
                 end
             end
@@ -433,17 +362,11 @@ local function highlight_pipeline(starter_entity, player_index)
     end
 end
 
-
-
-
 local function get_pipeline(event)
     local player, pdata = Player.get(event.player_index)
-    if not pdata.current_pipeline_table then
-        pdata.current_pipeline_table = {}
-    end
-    if not pdata.current_marker_table then
-        pdata.current_marker_table = {}
-    end
+    pdata.current_pipeline_table = pdata.current_pipeline_table or {}
+    pdata.current_marker_table = pdata.current_marker_table or {}
+
     local selection = player.selected
     if selection then
         if allowed_types[selection.type] then
@@ -465,7 +388,4 @@ local function get_pipeline(event)
     end
 end
 
-
-Event.register(defines.events.on_selected_entity_changed, get_pipeline)
-
-Event.register('picker-highlight-pipeline', get_pipeline)
+Event.register({'picker-highlight-pipeline', defines.events.on_selected_entity_changed}, get_pipeline)
