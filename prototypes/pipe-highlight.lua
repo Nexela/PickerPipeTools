@@ -78,7 +78,125 @@ for _,stuff in pairs(new_dots) do
         }
     }
 end
+local empty_sprite =
+{
+  filename = "__core__/graphics/empty.png",
+  priority = "extra-high",
+  width = 1,
+  height = 1,
+  frame_count = 1
+}
 
+local underground_marker_beam_table = {
+    ['picker-pipe-marker-beam'] = 'pipe-marker-horizontal',
+    ['picker-pipe-marker-beam-good'] = 'pipe-marker-horizontal-good',
+    ['picker-pipe-marker-beam-bad'] = 'pipe-marker-horizontal-bad'
+}
+local underground_marker_beams = {}
+for beam_type, marker_name in pairs(underground_marker_beam_table) do
+    local marker_beams = util.table.deepcopy(data.raw['beam']['electric-beam-no-sound'])
+    marker_beams.name = beam_type
+    marker_beams.width = 1.0
+    marker_beams.damage_interval = 2000000000
+    marker_beams.action =
+    {
+      type = "direct",
+      action_delivery =
+      {
+        type = "instant",
+        target_effects =
+        {
+          {
+            type = "damage",
+            damage = { amount = 0, type = "electric"}
+          }
+        }
+      }
+    }
+    marker_beams.start = {
+        filename = "__core__/graphics/empty.png",
+        line_length = 1,
+        width = 1,
+        height = 1,
+        frame_count = 1,
+        axially_symmetrical = false,
+        direction_count = 1,
+        --shift = {-0.03125, 0},
+        hr_version =
+        {
+            filename = "__core__/graphics/empty.png",
+            line_length = 1,
+            width = 1,
+            height = 1,
+            frame_count = 1,
+            axially_symmetrical = false,
+            direction_count = 1,
+            --shift = {0.53125, 0},
+            --scale = 0.5
+        }
+    }
+    marker_beams.ending = {
+        filename = "__core__/graphics/empty.png",
+        line_length = 1,
+        width = 1,
+        height = 1,
+        frame_count = 1,
+        axially_symmetrical = false,
+        direction_count = 1,
+        --shift = {-0.03125, 0},
+        hr_version =
+        {
+            filename = "__core__/graphics/empty.png",
+            line_length = 1,
+            width = 1,
+            height = 1,
+            frame_count = 1,
+            axially_symmetrical = false,
+            direction_count = 1,
+            --shift = {0.53125, 0},
+            --scale = 0.5
+        }
+    }
+    marker_beams.head =
+    {
+        filename = "__PickerPipeTools__/graphics/entity/markers/" .. marker_name .. ".png",
+        line_length = 1,
+        width = 64,
+        height = 64,
+        frame_count = 1,
+        animation_speed = 1,
+        scale = 0.5
+        --blend_mode = beam_blend_mode
+    }
+    marker_beams.tail =
+    {
+        filename = "__PickerPipeTools__/graphics/entity/markers/" .. marker_name .. ".png",
+        line_length = 1,
+        width = 64,
+        height = 64,
+        frame_count = 1,
+        animation_speed = 1,
+        scale = 0.5
+        --blend_mode = beam_blend_mode
+    }
+    marker_beams.body =
+    {
+        {
+            filename = "__PickerPipeTools__/graphics/entity/markers/" .. marker_name .. ".png",
+            line_length = 1,
+            width = 64,
+            height = 64,
+            frame_count = 1,
+            scale = 0.5
+            --blend_mode = beam_blend_mode
+        }
+    }
+    underground_marker_beams[#underground_marker_beams + 1] = marker_beams
+end
+
+data:extend(
+    underground_marker_beams
+)
 
 data:extend {
     --new_dots,
@@ -272,6 +390,5 @@ data:extend {
             }
         }
     },
---------------------------------------------------------------------------------------------------------
 
 }

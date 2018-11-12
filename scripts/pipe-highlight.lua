@@ -132,6 +132,11 @@ local pipe_highlight_markers = {
         ['normal'] = 'picker-pipe-dot',
         ['good'] = 'picker-pipe-dot-good',
         ['bad'] = 'picker-pipe-dot-bad'
+    },
+    beam = {
+        ['normal'] = 'picker-pipe-marker-beam',
+        ['good'] = 'picker-pipe-marker-beam-good',
+        ['bad'] = 'picker-pipe-marker-beam-bad',
     }
 }
 
@@ -139,6 +144,30 @@ local function unmark_pipeline(markers)
     if markers then
         for _, entity in pairs(markers) do
             entity.destroy()
+        end
+    end
+end
+
+local function get_ew(delta_x)
+    return delta_x > 0 and defines.direction.west or defines.direction.east
+end
+
+local function get_ns(delta_y)
+    return delta_y > 0 and defines.direction.north or defines.direction.south
+end
+
+local function get_direction(entity_position, neighbour_position)
+    local delta_x = entity_position.x - neighbour_position.x
+    local delta_y = entity_position.y - neighbour_position.y
+    if delta_x ~= 0 and delta_y == 0 then
+        return get_ew(delta_x)
+    elseif delta_x == 0 and delta_y ~= 0 then
+        return get_ns(delta_y)
+    elseif delta_x ~= 0 and delta_y ~= 0 then
+        if math.abs(delta_x) > math.abs(delta_y) then
+            return get_ew(delta_x)
+        elseif math.abs(delta_x) < math.abs(delta_y) then
+            return get_ns(delta_y)
         end
     end
 end
@@ -176,50 +205,15 @@ local function highlight_pipeline(starter_entity, player_index)
 
     --? Handles drawing dashes between two pipe to ground.
     local function draw_dashes(entity_position, neighbour_position, type)
-        local current_direction = Position.direction_to(entity_position, neighbour_position)
-        local marker_name = pipe_highlight_markers.dash[type][current_direction]
-        -- TODO lots of repetative code here....
-        if current_direction == defines.direction.south then
-            local delta_y = math.abs(entity_position.y - neighbour_position.y)
-            for i = 0.5, delta_y, 1 do
-                markers_made = markers_made + 1
-                all_markers[markers_made] =
-                    create {
-                    name = marker_name,
-                    position = {entity_position.x, entity_position.y + i}
-                }
-            end
-        elseif current_direction == defines.direction.west then
-            local delta_x = (entity_position.x - neighbour_position.x)
-            for i = 0.5, delta_x, 1 do
-                markers_made = markers_made + 1
-                all_markers[markers_made] =
-                    create {
-                    name = marker_name,
-                    position = {entity_position.x - i, entity_position.y}
-                }
-            end
-        elseif current_direction == defines.direction.east then
-            local distance_x = (neighbour_position.x - entity_position.x)
-            for i = 0.5, distance_x, 1 do
-                markers_made = markers_made + 1
-                all_markers[markers_made] =
-                    create {
-                    name = marker_name,
-                    position = {entity_position.x + i, entity_position.y}
-                }
-            end
-        elseif current_direction == defines.direction.north then
-            local delta_y = (entity_position.y - neighbour_position.y)
-            for i = 0.5, delta_y, 1 do
-                markers_made = markers_made + 1
-                all_markers[markers_made] =
-                    create {
-                    name = marker_name,
-                    position = {entity_position.x, entity_position.y - i}
-                }
-            end
-        end
+        markers_made = markers_made + 1
+        all_markers[markers_made] =
+            create {
+            name = pipe_highlight_markers.beam[type],
+            position = entity_position,
+            source_position = {entity_position.x, entity_position.y + 0.9},
+            target_position = {neighbour_position.x, neighbour_position.y - 0.1},
+            duration = 2000000000
+        }
     end
 
     local function get_directions(entity_position, entity_neighbours)
@@ -228,9 +222,9 @@ local function highlight_pipeline(starter_entity, player_index)
             local neighbour_unit_number = neighbour.unit_number
             local current_neighbour = read_entity_data[neighbour_unit_number]
             if current_neighbour then
-                table_entry = table_entry + (2 ^ Position.direction_to(entity_position, current_neighbour[1]))
+                table_entry = table_entry + (2 ^ get_direction(entity_position, current_neighbour[1]))
             else
-                table_entry = table_entry + (2 ^ Position.direction_to(entity_position, neighbour.position))
+                table_entry = table_entry + (2 ^ get_direction(entity_position, neighbour.position))
             end
         end
         return table_entry
@@ -242,10 +236,10 @@ local function highlight_pipeline(starter_entity, player_index)
         pipes_read = pipes_read + 1
         --? Stored as indexed array internally.
         read_entity_data[entity_unit_number] = {
-            --[[[1]=]] entity_position,
-            --[[[2]=]] entity_neighbours,
-            --[[[3]=]] entity_type,
-            --[[[4]=]] entity_name
+            entity_position,
+            entity_neighbours,
+            entity_type,
+            entity_name
         }
         --? Checks for orphahns
         if #entity_neighbours < 2 then
@@ -265,10 +259,10 @@ local function highlight_pipeline(starter_entity, player_index)
                     --? Verify we haven't been here before
                     if not read_entity_data[neighbour_unit_number] then
                         --? Step to next pipe
-                        read_pipeline(neighbour, neighbour_unit_number, neighbour_position, neighbour_name)
+                        read_pipeline(neighbour, neighbour_unit_number, neighbour_position, neighbour_type, neighbour_name)
                     end
                 else --? Mark objects that aren't allowed to be traversed to. (Endpoints such as storage-tank, oil-refinery, etc.)
-                    local current_direction = Position.direction_to(entity_position, neighbour_position, neighbour_type)
+                    local current_direction = get_direction(entity_position, neighbour_position)
                     draw_marker(Position.translate(entity_position, current_direction, 1), 'good', 2 ^ Position.opposite_direction(current_direction))
                     all_entities_marked[neighbour_unit_number] = true
                 end
@@ -337,7 +331,16 @@ local function highlight_pipeline(starter_entity, player_index)
                     for _, neighbour in pairs(current_entity[2]) do
                         local neighbour_unit_number = neighbour.unit_number
                         local current_neighbour = read_entity_data[neighbour_unit_number]
-                        if draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]] then
+                        if current_neighbour and (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) and not all_entities_marked[neighbour_unit_number] then
+                            --[[markers_made = markers_made + 1
+                            all_markers[markers_made] =
+                                create {
+                                name = 'picker-pipe-marker-beam',
+                                position = current_entity[1],
+                                source_position = {current_entity[1].x, current_entity[1].y + 0.9},
+                                target_position = {current_neighbour[1].x, current_neighbour[1].y - 0.1},
+                                duration = 2000000000
+                            }]]--
                             draw_dashes(current_entity[1], current_neighbour[1], 'normal')
                         end
                     end
@@ -353,7 +356,7 @@ local function highlight_pipeline(starter_entity, player_index)
                     for _, neighbour in pairs(current_entity[2]) do
                         local neighbour_unit_number = neighbour.unit_number
                         local current_neighbour = read_entity_data[neighbour_unit_number]
-                        if draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]] then
+                        if current_neighbour and (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) then
                             draw_dashes(current_entity[1], current_neighbour[1], 'good')
                         end
                     end
@@ -363,6 +366,7 @@ local function highlight_pipeline(starter_entity, player_index)
             end
         end
     end
+    game.print(pipes_read .. " pipes found in currently selected network")
 end
 
 local function get_pipeline(event)
