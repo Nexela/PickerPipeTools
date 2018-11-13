@@ -1,10 +1,14 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.1.1
-Date: 21. 10. 2018
+Version: 0.1.2
+Date: 12. 11. 2018
   Features:
-    -
+    - Pipe Highlight tool revamped to be a toggle.
+    - Pipe Highlight tool now has setting for maximum distance checked (50-500 tiles). (80 tiles default)
+    - Pipeline highlighter tool added. Highlights and assesses any pipeline you select (hover your mouse over) up to the setting limit (100-5000 pipes). (Default 250)
   Fixes:
     - Pipe Highlight tool was improperly drawing underground markers into buildings that were not pipes. Now it only draws markers for underground pipes.
+    - Clamped pipes were not cooperating with PipeLayer mod. Corrected.
+    - Altered internal "Get direction" script logic to be significantly more efficent.
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.1
 Date: 21. 10. 2018

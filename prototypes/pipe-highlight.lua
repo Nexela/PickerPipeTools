@@ -65,10 +65,42 @@ for index,dots in pairs(dot_table) do
             current_entity.final_render_layer = 'light-effect'
         end
         current_entity.animation.filename = '__PickerPipeTools__/graphics/entity/markers/' .. dot_image_table[index] .. directions .. '.png'
+        --current_entity.animation.scale = 0.5
         new_dots[#new_dots + 1] = current_entity
     end
 end
 
+local pump_marker_table = {
+    'picker-pump-marker',
+    'picker-pump-marker-good',
+    'picker-pump-marker-bad'
+}
+local pump_marker_image_table ={
+    'pump-marker',
+    'pump-marker-good',
+    'pump-marker-bad'
+}
+local pump_directions ={
+    '-n',
+    '-e',
+    '-s',
+    '-w'
+}
+
+for index,pump_marker_name in pairs(pump_marker_table) do
+    for direction_index,directions in pairs(pump_directions) do
+        local current_entity = util.table.deepcopy(base_entity)
+        current_entity.type = "corpse"
+        current_entity.name = pump_marker_name .. directions
+        current_entity.animation.shift = {0, -0.1}
+        if direction_index == 1 then
+            current_entity.final_render_layer = 'light-effect'
+        end
+        current_entity.animation.filename = '__PickerPipeTools__/graphics/entity/markers/' .. pump_marker_image_table[index] .. directions .. '.png'
+        --current_entity.animation.scale = 0.5
+        new_dots[#new_dots + 1] = current_entity
+    end
+end
 
 for _,stuff in pairs(new_dots) do
     data:extend{
@@ -78,19 +110,24 @@ for _,stuff in pairs(new_dots) do
         }
     }
 end
-local empty_sprite =
-{
-  filename = "__core__/graphics/empty.png",
-  priority = "extra-high",
-  width = 1,
-  height = 1,
-  frame_count = 1
-}
 
 local underground_marker_beam_table = {
-    ['picker-pipe-marker-beam'] = 'pipe-marker-horizontal',
-    ['picker-pipe-marker-beam-good'] = 'pipe-marker-horizontal-good',
-    ['picker-pipe-marker-beam-bad'] = 'pipe-marker-horizontal-bad'
+    ['picker-pipe-marker-beam'] = {
+        dash = 'pipe-marker-horizontal',
+        --TODO 0.17--box = 'pipe-marker-dot',
+    },
+    ['picker-pipe-marker-beam-good'] = {
+        dash = 'pipe-marker-horizontal-good',
+        --TODO 0.17--box = 'pipe-marker-dot-good',
+    },
+    ['picker-pipe-marker-beam-bad'] = {
+        dash = 'pipe-marker-horizontal-bad',
+        --TODO 0.17--box = 'pipe-marker-dot-bad',
+    },
+    ['picker-underground-marker-beam'] = {
+        dash = 'underground-lines-single-horizontal',
+        --TODO 0.17-- box = 'pipe-marker-dot-bad',
+    }
 }
 local underground_marker_beams = {}
 for beam_type, marker_name in pairs(underground_marker_beam_table) do
@@ -98,8 +135,8 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
     marker_beams.name = beam_type
     marker_beams.width = 1.0
     marker_beams.damage_interval = 2000000000
-    marker_beams.action =
-    {
+    marker_beams.action = nil
+    --[[{
       type = "direct",
       action_delivery =
       {
@@ -112,7 +149,7 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
           }
         }
       }
-    }
+    }]]--
     marker_beams.start = {
         filename = "__core__/graphics/empty.png",
         line_length = 1,
@@ -144,6 +181,7 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
         axially_symmetrical = false,
         direction_count = 1,
         --shift = {-0.03125, 0},
+        --scale = 0.5,
         hr_version =
         {
             filename = "__core__/graphics/empty.png",
@@ -157,40 +195,101 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
             --scale = 0.5
         }
     }
-    marker_beams.head =
-    {
-        filename = "__PickerPipeTools__/graphics/entity/markers/" .. marker_name .. ".png",
+    -- TODO 0.17 version
+    --[[marker_beams.ending = {
+        filename = "__PickerPipeTools__/graphics/entity/markers/" .. marker_name.box .. ".png",
         line_length = 1,
         width = 64,
         height = 64,
         frame_count = 1,
-        animation_speed = 1,
-        scale = 0.5
-        --blend_mode = beam_blend_mode
-    }
-    marker_beams.tail =
-    {
-        filename = "__PickerPipeTools__/graphics/entity/markers/" .. marker_name .. ".png",
-        line_length = 1,
-        width = 64,
-        height = 64,
-        frame_count = 1,
-        animation_speed = 1,
-        scale = 0.5
-        --blend_mode = beam_blend_mode
-    }
-    marker_beams.body =
-    {
+        axially_symmetrical = false,
+        direction_count = 1,
+        --shift = {-0.03125, 0},
+        scale = 0.5,
+        hr_version =
         {
-            filename = "__PickerPipeTools__/graphics/entity/markers/" .. marker_name .. ".png",
+            filename = "__PickerPipeTools__/graphics/entity/markers/" .. marker_name.box .. ".png",
             line_length = 1,
             width = 64,
             height = 64,
             frame_count = 1,
+            axially_symmetrical = false,
+            direction_count = 1,
+            --shift = {0.53125, 0},
+            scale = 0.5
+        }
+    }]]--
+    if beam_type == 'picker-underground-marker-beam' then
+        marker_beams.head =
+        {
+            filename = "__PickerPipeTools__/graphics/entity/markers/" .. marker_name.dash .. ".png",
+            line_length = 1,
+            width = 64,
+            height = 64,
+            frame_count = 1,
+            animation_speed = 1,
             scale = 0.5
             --blend_mode = beam_blend_mode
         }
-    }
+        marker_beams.tail =
+        {
+            filename = "__PickerPipeTools__/graphics/entity/markers/" .. marker_name.dash .. ".png",
+            line_length = 1,
+            width = 64,
+            height = 64,
+            frame_count = 1,
+            animation_speed = 1,
+            scale = 0.5
+            --blend_mode = beam_blend_mode
+        }
+        marker_beams.body =
+        {
+            {
+                filename = "__PickerPipeTools__/graphics/entity/markers/" .. marker_name.dash .. ".png",
+                line_length = 1,
+                width = 64,
+                height = 64,
+                frame_count = 1,
+                scale = 0.5
+                --blend_mode = beam_blend_mode
+            }
+        }
+    else
+        marker_beams.head =
+        {
+            filename = "__PickerPipeTools__/graphics/entity/markers/" .. marker_name.dash .. ".png",
+            line_length = 1,
+            width = 64,
+            height = 64,
+            frame_count = 1,
+            animation_speed = 1,
+            scale = 0.5
+            --blend_mode = beam_blend_mode
+        }
+        marker_beams.tail =
+        {
+            filename = "__PickerPipeTools__/graphics/entity/markers/" .. marker_name.dash .. ".png",
+            line_length = 1,
+            width = 64,
+            height = 64,
+            frame_count = 1,
+            animation_speed = 1,
+            scale = 0.5
+            --blend_mode = beam_blend_mode
+        }
+        marker_beams.body =
+        {
+            {
+                filename = "__PickerPipeTools__/graphics/entity/markers/" .. marker_name.dash .. ".png",
+                line_length = 1,
+                width = 64,
+                height = 64,
+                frame_count = 1,
+                scale = 0.5
+                --blend_mode = beam_blend_mode
+            }
+        }
+    end
     underground_marker_beams[#underground_marker_beams + 1] = marker_beams
 end
 
