@@ -1,10 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.2
-Date: 12. 11. 2018
+Date: 15. 11. 2018
   Features:
     - Pipe Highlight tool revamped to be a toggle.
     - Pipe Highlight tool now has setting for maximum distance checked (50-500 tiles). (80 tiles default)
     - Pipeline highlighter tool added. Highlights and assesses any pipeline you select (hover your mouse over) up to the setting limit (100-5000 pipes). (Default 250)
+    - Administrator /clear-all-markers command to remove all markers from any player.
+    - Two settings that will show orphaned pipe count and/or total pipe count (per player)
   Fixes:
     - Pipe Highlight tool was improperly drawing underground markers into buildings that were not pipes. Now it only draws markers for underground pipes.
     - Clamped pipes were not cooperating with PipeLayer mod. Corrected.
