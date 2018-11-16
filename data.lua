@@ -18,12 +18,12 @@ data:extend{
         key_sequence = "CONTROL + SHIFT + C",
         consuming = "script-only"
     },
-    {
+    --[[{
         type = "custom-input",
         name = "picker-highlight-pipeline",
         key_sequence = "CONTROL + ALT + P",
         consuming = "script-only"
-    }
+    }]]--
 }
 
 require('prototypes/pipe-highlight')

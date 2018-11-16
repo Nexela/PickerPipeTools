@@ -54,7 +54,10 @@ local draw_dashes_types = {
     ['pipe-to-ground'] = true
 }
 local draw_dashes_names = {
-    ['underground-mini-pump'] = true
+    ['underground-mini-pump'] = true,
+    ['underground-mini-pump-t1'] = true,
+    ['underground-mini-pump-t2'] = true,
+    ['underground-mini-pump-t3'] = true
 }
 local pipe_highlight_markers = {
     pump = {
@@ -89,95 +92,6 @@ local pipe_highlight_markers = {
     }
 }
 
-local function show_underground_sprites(event)
-    local player, pdata = Player.get(event.player_index)
-    local create = player.surface.create_entity
-    local read_entity_data = {}
-    local all_entities_marked = {}
-    local all_markers = {}
-    local markers_made = 0
-
-    --? Assign working table reference to global reference under player
-    pdata.current_underground_marker_table = all_markers
-
-    local max_distance = settings.global['picker-max-distance-checked'].value
-
-    local filter = {
-        area = {{player.position.x - max_distance, player.position.y - max_distance}, {player.position.x + max_distance, player.position.y + max_distance}},
-        type = {'pipe-to-ground', 'pump'},
-        force = player.force
-    }
-    for _, entity in pairs(player.surface.find_entities_filtered(filter)) do
-        local entity_unit_number = entity.unit_number
-        local entity_position = entity.position
-        local entity_neighbours = entity.neighbours[1]
-        local entity_type = entity.type
-        local entity_name = entity.name
-        read_entity_data[entity_unit_number] = {
-            entity_position,
-            entity_neighbours,
-            entity_type,
-            entity_name
-        }
-    end
-    for unit_number, entity_data in pairs(read_entity_data) do
-        local max_neighbours = pipe_connections[entity_data[4]] or 2
-        if (#entity_data[2]) < max_neighbours then
-            markers_made = markers_made + 1
-            all_markers[markers_made] = create {
-                name = 'picker-pipe-marker-box-bad',
-                position = entity_data[1]
-            }
-        else
-            markers_made = markers_made + 1
-            all_markers[markers_made] = create {
-                name = 'picker-pipe-marker-box-good',
-                position = entity_data[1]
-            }
-        end
-
-        for _, neighbour in pairs(entity_data[2]) do
-            local neighbour_unit_number = neighbour.unit_number
-            local neighbour_data = read_entity_data[neighbour_unit_number]
-            if neighbour_data then
-                if draw_dashes_types[neighbour_data[3]] or draw_dashes_names[neighbour_data[4]] and not all_entities_marked[neighbour_unit_number] then
-                    markers_made = markers_made + 1
-                    all_markers[markers_made] =
-                        create {
-                        name = 'picker-underground-marker-beam',
-                        position = entity_data[1],
-                        source_position = {entity_data[1].x, entity_data[1].y + 1},
-                        --TODO 0.17 source_position = {entity_position.x, entity_position.y - 0.1},
-                        target_position = neighbour_data[1],
-                        duration = 2000000000
-                    }
-                end
-            end
-        end
-        all_entities_marked[unit_number] = true
-    end
-end
-
-local function unmark_pipeline(markers)
-    if markers then
-        for _, entity in pairs(markers) do
-            entity.destroy()
-        end
-    end
-end
-
-local function highlight_underground(event)
-    local _, pdata = Player.get(event.player_index)
-    pdata.current_underground_marker_table = pdata.current_underground_marker_table or {}
-    if next(pdata.current_underground_marker_table) then
-        unmark_pipeline(pdata.current_underground_marker_table)
-        pdata.current_underground_marker_table = nil
-    else
-        show_underground_sprites(event)
-    end
-end
-Event.register('picker-show-underground-paths', highlight_underground)
-
 local function get_ew(delta_x)
     return delta_x > 0 and defines.direction.west or defines.direction.east
 end
@@ -205,6 +119,99 @@ local function get_direction(entity_position, neighbour_position)
         return get_ns(delta_y)
     end
 end
+
+local function show_underground_sprites(event)
+    local player, pdata = Player.get(event.player_index)
+    local create = player.surface.create_entity
+    local read_entity_data = {}
+    local all_entities_marked = {}
+    local all_markers = {}
+    local markers_made = 0
+
+    --? Assign working table reference to global reference under player
+    pdata.current_underground_marker_table = all_markers
+
+    local max_distance = settings.global['picker-max-distance-checked'].value
+
+    local filter = {
+        area = {{player.position.x - max_distance, player.position.y - max_distance}, {player.position.x + max_distance, player.position.y + max_distance}},
+        type = {'pipe-to-ground', 'pump'},
+        force = player.force
+    }
+    for _, entity in pairs(player.surface.find_entities_filtered(filter)) do
+        local entity_unit_number = entity.unit_number
+        local entity_position = entity.position
+        local entity_neighbours = entity.neighbours[1]
+        local entity_type = entity.type
+        local entity_name = entity.name
+        if draw_dashes_types[entity_type] or draw_dashes_names[entity_name] then
+            read_entity_data[entity_unit_number] = {
+                entity_position,
+                entity_neighbours,
+                entity_type,
+                entity_name
+            }
+        end
+    end
+    for unit_number, entity_data in pairs(read_entity_data) do
+        local max_neighbours = pipe_connections[entity_data[4]] or 2
+        if (#entity_data[2]) < max_neighbours then
+            markers_made = markers_made + 1
+            all_markers[markers_made] = create {
+                name = 'picker-pipe-marker-box-bad',
+                position = entity_data[1]
+            }
+        else
+            markers_made = markers_made + 1
+            all_markers[markers_made] = create {
+                name = 'picker-pipe-marker-box-good',
+                position = entity_data[1]
+            }
+        end
+
+        for _, neighbour in pairs(entity_data[2]) do
+            local neighbour_unit_number = neighbour.unit_number
+            local neighbour_data = read_entity_data[neighbour_unit_number]
+            if neighbour_data then
+                if draw_dashes_types[neighbour_data[3]] or draw_dashes_names[neighbour_data[4]] and not all_entities_marked[neighbour_unit_number] then
+                    local start_position = Position.translate(entity_data[1], get_direction(entity_data[1], neighbour_data[1]), 0.5)
+                    local end_position = Position.translate(neighbour_data[1], get_direction(neighbour_data[1], entity_data[1]), 0.5)
+                    markers_made = markers_made + 1
+                    all_markers[markers_made] =
+                        create {
+                        name = 'picker-underground-marker-beam',
+                        position = entity_data[1],
+                        source_position = {start_position.x, start_position.y + 1},
+                        --TODO 0.17 source_position = {entity_position.x, entity_position.y - 0.1},
+                        target_position = end_position,
+                        duration = 2000000000
+                    }
+                end
+            end
+        end
+        all_entities_marked[unit_number] = true
+    end
+end
+
+local function destroy_markers(markers)
+    if markers then
+        for _, entity in pairs(markers) do
+            entity.destroy()
+        end
+    end
+end
+
+local function highlight_underground(event)
+    local _, pdata = Player.get(event.player_index)
+    pdata.current_underground_marker_table = pdata.current_underground_marker_table or {}
+    if next(pdata.current_underground_marker_table) then
+        destroy_markers(pdata.current_underground_marker_table)
+        pdata.current_underground_marker_table = nil
+    else
+        show_underground_sprites(event)
+    end
+end
+Event.register('picker-show-underground-paths', highlight_underground)
 
 local function highlight_pipeline(starter_entity, player_index)
     local player, pdata = Player.get(player_index)
@@ -256,7 +263,6 @@ local function highlight_pipeline(starter_entity, player_index)
         local table_entry = 0
         local directions_table = {}
         for _, neighbour_unit_number in pairs(entity_neighbours) do
-            --local neighbour_unit_number = neighbour.unit_number
             local current_neighbour = read_entity_data[neighbour_unit_number]
             if current_neighbour then
                 --if not (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) then
@@ -278,7 +284,6 @@ local function highlight_pipeline(starter_entity, player_index)
     local function draw_pump_marker(position, type, direction, pump_neighbours)
         local name = pipe_highlight_markers.pump[type][direction]
         if type == 'bad' then
-            --get_directions(position, pump_neighbours)
             name = pipe_highlight_markers.pump[type][direction] .. directional_table[get_directions(position, pump_neighbours)]
         end
         markers_made = markers_made + 1
@@ -323,7 +328,7 @@ local function highlight_pipeline(starter_entity, player_index)
                         read_pipeline(neighbour, neighbour_unit_number, neighbour_position, neighbour_type, neighbour_name)
                     end
                 end
-            else --? Mark objects that aren't allowed to be traversed to. (Endpoints such as storage-tank, oil-refinery, etc.)
+            else --? Store and mark objects that aren't allowed to be traversed to. (Endpoints such as storage-tank, oil-refinery, etc.)
                 read_neighbour_data[neighbour_unit_number] = {
                     neighbour_position,
                     neighbour_type,
@@ -371,7 +376,9 @@ local function highlight_pipeline(starter_entity, player_index)
     end
 
     if orphan_counter > 0 then
-        player.print(orphan_counter .. ' dead end pipes found.')
+        if player.mod_settings['picker-count-orphans-found'].value then
+            player.print(orphan_counter .. ' dead end pipes found.')
+        end
         for unit_number, _ in pairs(tracked_orphans) do
             local current_orphan = read_entity_data[unit_number]
             if current_orphan[3] == 'pump' and not draw_dashes_names[current_orphan[4]] then
@@ -387,7 +394,6 @@ local function highlight_pipeline(starter_entity, player_index)
             end
             all_entities_marked[unit_number] = true
             for _, neighbour_unit_number in pairs(current_orphan[2]) do
-                --local neighbour_unit_number = neighbour.unit_number
                 local current_neighbour = read_entity_data[neighbour_unit_number]
                 if current_neighbour then
                         if draw_dashes_types[current_orphan[3]] or draw_dashes_names[current_orphan[4]] then
@@ -444,7 +450,9 @@ local function highlight_pipeline(starter_entity, player_index)
             end
         end
     end
-    --game.print(pipes_read .. " pipes found in currently selected network")
+    if player.mod_settings['picker-count-pipes-highlighted'].value then
+        player.print(pipes_read .. " pipes found in currently selected network")
+    end
 end
 
 local function get_pipeline(event)
@@ -456,21 +464,36 @@ local function get_pipeline(event)
     if selection then
         if allowed_types[selection.type] then
             if not pdata.current_pipeline_table[selection.unit_number] then
-                unmark_pipeline(pdata.current_marker_table)
+                destroy_markers(pdata.current_marker_table)
                 pdata.current_pipeline_table = nil
                 pdata.current_marker_table = nil
                 highlight_pipeline(selection, event.player_index)
             end
         else
-            unmark_pipeline(pdata.current_marker_table)
+            destroy_markers(pdata.current_marker_table)
             pdata.current_pipeline_table = nil
             pdata.all_markers = nil
         end
     else
-        unmark_pipeline(pdata.current_marker_table)
+        destroy_markers(pdata.current_marker_table)
         pdata.current_pipeline_table = nil
         pdata.all_markers = nil
     end
 end
 
-Event.register({'picker-highlight-pipeline', defines.events.on_selected_entity_changed}, get_pipeline)
+Event.register(defines.events.on_selected_entity_changed, get_pipeline)
+
+
+local function clear_markers(event)
+    local player, _ = Player.get(event.player_index)
+    if player.admin then
+        for _, pdata in pairs(global.players) do
+            destroy_markers(pdata.current_marker_table)
+            pdata.current_pipeline_table = nil
+            pdata.current_marker_table = nil
+            destroy_markers(pdata.current_underground_marker_table)
+            pdata.current_underground_marker_table = nil
+        end
+    end
+end
+commands.add_command('clear-all-markers', {"highlight-commands.clear-markers"}, clear_markers)

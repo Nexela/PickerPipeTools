@@ -30,5 +30,19 @@ data:extend{
         maximum_value = 500,
         default_value = 80,
         order = 'picker-b'
-    }
+    },
+    {
+        type = 'bool-setting',
+        name = 'picker-count-pipes-highlighted',
+        setting_type = 'runtime-per-user',
+        default_value = true,
+        order = 'picker-b[find-orphans]-a'
+    },
+    {
+        type = 'bool-setting',
+        name = 'picker-count-orphans-found',
+        setting_type = 'runtime-per-user',
+        default_value = true,
+        order = 'picker-b[find-orphans]-a'
+    },
 }

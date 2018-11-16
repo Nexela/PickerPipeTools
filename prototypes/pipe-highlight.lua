@@ -5,8 +5,7 @@ local base_entity = {
     flags = {"placeable-neutral", "not-on-map"},
     subgroup="remnants",
     order="d[remnants]-c[wall]",
-    --type = 'simple-entity',
-    icon = '__PickerPipeTools__/graphics/entity/markers/32x32highlighter.png',
+    icon = '__PickerPipeTools__/graphics/entity/markers/32x32highlightergood.png',
     icon_size = 32,
     time_before_removed = 2000000000,
     collision_box = {{0, 0}, {0, 0}},
@@ -18,9 +17,7 @@ local base_entity = {
         height = 64,
         frame_count = 1,
         direction_count = 1,
-        --scale = 0.5,
-        --shift = {-0.5, -0.5},
-        filename = '__PickerPipeTools__/graphics/entity/markers/32x32highlighter.png'
+        filename = '__PickerPipeTools__/graphics/entity/markers/32x32highlightergood.png'
     }
 }
 
@@ -239,8 +236,7 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
             height = 64,
             frame_count = 1,
             animation_speed = 1,
-            scale = 0.5
-            --blend_mode = beam_blend_mode
+            scale = 0.5,
         }
         marker_beams.tail =
         {
@@ -250,8 +246,7 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
             height = 64,
             frame_count = 1,
             animation_speed = 1,
-            scale = 0.5
-            --blend_mode = beam_blend_mode
+            scale = 0.5,
         }
         marker_beams.body =
         {
@@ -262,7 +257,6 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
                 height = 64,
                 frame_count = 1,
                 scale = 0.5
-                --blend_mode = beam_blend_mode
             }
         }
     else
@@ -275,7 +269,6 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
             frame_count = 1,
             animation_speed = 1,
             scale = 0.5
-            --blend_mode = beam_blend_mode
         }
         marker_beams.tail =
         {
@@ -286,7 +279,6 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
             frame_count = 1,
             animation_speed = 1,
             scale = 0.5
-            --blend_mode = beam_blend_mode
         }
         marker_beams.body =
         {
@@ -297,7 +289,6 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
                 height = 64,
                 frame_count = 1,
                 scale = 0.5
-                --blend_mode = beam_blend_mode
             }
         }
     end
@@ -307,28 +298,7 @@ end
 data:extend(
     underground_marker_beams
 )
-
 data:extend {
-    --new_dots,
-    merge {
-        base_entity,
-        {
-            name = 'picker-pipe-marker-box-good',
-            icon = '__PickerPipeTools__/graphics/entity/markers/32x32highlighter.png',
-            --time_before_removed = 60 * 20,
-            collision_box = {{0, 0}, {0, 0}},
-            final_render_layer = 'selection-box',
-            animation = {
-                width = 64,
-                height = 64,
-                frame_count = 1,
-                direction_count = 1,
-                scale = 0.5,
-                shift = {-0.5, -0.5},
-                filename = '__PickerPipeTools__/graphics/entity/markers/32x32highlighter.png'
-            }
-        }
-    },
     merge {
         base_entity,
         {
@@ -351,8 +321,8 @@ data:extend {
     merge {
         base_entity,
         {
-            name = 'picker-underground-pipe-marker-horizontal',
-            icon = '__PickerPipeTools__/graphics/entity/markers/underground-lines-single-horizontal.png',
+            name = 'picker-pipe-marker-box-good',
+            icon = '__PickerPipeTools__/graphics/entity/markers/32x32highlightergood.png',
             --time_before_removed = 60 * 20,
             collision_box = {{0, 0}, {0, 0}},
             final_render_layer = 'selection-box',
@@ -361,144 +331,10 @@ data:extend {
                 height = 64,
                 frame_count = 1,
                 direction_count = 1,
-                --scale = 0.5,
+                scale = 0.5,
                 shift = {-0.5, -0.5},
-                filename = '__PickerPipeTools__/graphics/entity/markers/underground-lines-single-horizontal.png'
+                filename = '__PickerPipeTools__/graphics/entity/markers/32x32highlightergood.png'
             }
         }
-    },
-    merge {
-        base_entity,
-        {
-            name = 'picker-underground-pipe-marker-vertical',
-            icon = '__PickerPipeTools__/graphics/entity/markers/underground-lines-single-vertical.png',
-            --time_before_removed = 60 * 20,
-            collision_box = {{0, 0}, {0, 0}},
-            final_render_layer = 'selection-box',
-            animation = {
-                width = 64,
-                height = 64,
-                frame_count = 1,
-                direction_count = 1,
-                --scale = 0.5,
-                shift = {-0.5, -0.5},
-                filename = '__PickerPipeTools__/graphics/entity/markers/underground-lines-single-vertical.png'
-            }
-        }
-    },
-    merge {
-        base_entity,
-        {
-            name = 'picker-pipe-marker-ew',
-            icon = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-horizontal.png',
-            --time_before_removed = 60 * 20,
-            collision_box = {{0, 0}, {0, 0}},
-            final_render_layer = 'collision-selection-box',
-            animation = {
-                width = 32,
-                height = 32,
-                frame_count = 1,
-                direction_count = 1,
-                ----scale = 0.5,
-                shift = {0, -0.6},
-                filename = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-horizontal.png'
-            }
-        }
-    },
-    merge {
-        base_entity,
-        {
-            name = 'picker-pipe-marker-ns',
-            icon = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-vertical.png',
-            --time_before_removed = 60 * 20,
-            collision_box = {{0, 0}, {0, 0}},
-            final_render_layer = 'collision-selection-box',
-            animation = {
-                width = 32,
-                height = 32,
-                frame_count = 1,
-                direction_count = 1,
-                ----scale = 0.5,
-                shift = {-0.5, -0.1},
-                filename = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-vertical.png'
-            }
-        }
-    },
-    merge {
-        base_entity,
-        {
-            name = 'picker-pipe-marker-good-ew',
-            icon = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-horizontal-good.png',
-            --time_before_removed = 60 * 20,
-            collision_box = {{0, 0}, {0, 0}},
-            final_render_layer = 'collision-selection-box',
-            animation = {
-                width = 32,
-                height = 32,
-                frame_count = 1,
-                direction_count = 1,
-                ----scale = 0.5,
-                shift = {0, -0.6},
-                filename = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-horizontal-good.png'
-            }
-        }
-    },
-    merge {
-        base_entity,
-        {
-            name = 'picker-pipe-marker-good-ns',
-            icon = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-vertical-good.png',
-            --time_before_removed = 60 * 20,
-            collision_box = {{0, 0}, {0, 0}},
-            final_render_layer = 'collision-selection-box',
-            animation = {
-                width = 32,
-                height = 32,
-                frame_count = 1,
-                direction_count = 1,
-                ----scale = 0.5,
-                shift = {-0.5, -0.1},
-                filename = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-vertical-good.png'
-            }
-        }
-    },
-    merge {
-        base_entity,
-        {
-            name = 'picker-pipe-marker-bad-ew',
-            icon = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-horizontal-bad.png',
-            --time_before_removed = 60 * 20,
-            collision_box = {{0, 0}, {0, 0}},
-            final_render_layer = 'collision-selection-box',
-            animation = {
-                width = 32,
-                height = 32,
-                frame_count = 1,
-                direction_count = 1,
-                ----scale = 0.5,
-                shift = {0, -0.6},
-                filename = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-horizontal-bad.png'
-            }
-        }
-    },
-    merge {
-        base_entity,
-        {
-            name = 'picker-pipe-marker-bad-ns',
-            icon = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-vertical-bad.png',
-            --time_before_removed = 60 * 20,
-            collision_box = {{0, 0}, {0, 0}},
-            final_render_layer = 'collision-selection-box',
-            animation = {
-                width = 32,
-                height = 32,
-                frame_count = 1,
-                direction_count = 1,
-                ----scale = 0.5,
-                shift = {-0.5, -0.1},
-                filename = '__PickerPipeTools__/graphics/entity/markers/pipe-marker-vertical-bad.png'
-            }
-        }
-    },
-
+    }
 }
