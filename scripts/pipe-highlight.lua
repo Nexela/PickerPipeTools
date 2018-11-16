@@ -16,63 +16,6 @@ local function load_pipe_connections()
 end
 Event.register({Event.core_events.init, Event.core_events.load}, load_pipe_connections)
 
---[[
-markers_made = markers_made + 1
-        all_markers[markers_made] =
-            create {
-            name = pipe_highlight_markers.beam[type],
-            position = entity_position,
-            source_position = {entity_position.x, entity_position.y + 0.9},
-            target_position = {neighbour_position.x, neighbour_position.y - 0.1},
-            duration = 2000000000
-        }
-
-
-
-local function get_direction(entity, neighbour)
-    local table_entry = 0
-    if not entity.valid or not neighbour.valid then
-        return
-    end
-    local deltaX = entity.position.x - neighbour.position.x
-    local deltaY = entity.position.y - neighbour.position.y
-    if deltaX ~= 0 then
-        if deltaY == 0 then
-            table_entry = table_entry + 2 ^ (getEW(deltaX))
-        else
-            if math.abs(deltaX) > math.abs(deltaY) then
-                return get_ew(delta_x)
-            else
-                --if math.abs(deltaX) < math.abs(deltaY) then
-                return get_ns(delta_y)
-            end
-        end
-    else
-        return get_ns(delta_y)
-    end
-    return table_entry
-end
-
-local function get_direction(entity_position, neighbour_position)
-    local delta_x = entity_position.x - neighbour_position.x
-    local delta_y = entity_position.y - neighbour_position.y
-    if delta_x ~= 0 then
-        if delta_y == 0 then
-            return delta_direction(delta_x, 2)
-        else
-            local adx, ady = abs(delta_x), abs(delta_y)
-            if adx > ady then
-                return delta_direction(delta_x, 0)
-            else
-                return delta_direction(delta_y, 2)
-            end
-        end
-    else
-        return delta_direction(delta_y, 0)
-    end
-end
-]]--
-
 
 
 local directional_table = {
@@ -235,9 +178,6 @@ local function highlight_underground(event)
 end
 Event.register('picker-show-underground-paths', highlight_underground)
 
-
-
-
 local function get_ew(delta_x)
     return delta_x > 0 and defines.direction.west or defines.direction.east
 end
@@ -270,6 +210,7 @@ local function highlight_pipeline(starter_entity, player_index)
     local player, pdata = Player.get(player_index)
     --? Declare working tables
     local read_entity_data = {}
+    local read_neighbour_data = {}
     local all_entities_marked = {}
     local all_markers = {}
     local tracked_orphans = {}
@@ -297,15 +238,6 @@ local function highlight_pipeline(starter_entity, player_index)
         }
     end
 
-    local function draw_pump_marker(position, type, direction)
-        markers_made = markers_made + 1
-        all_markers[markers_made] =
-            create {
-            name = pipe_highlight_markers.pump[type][direction],
-            position = position
-        }
-    end
-
     --? Handles drawing dashes between two pipe to ground.
     local function draw_dashes(entity_position, neighbour_position, type)
         markers_made = markers_made + 1
@@ -323,19 +255,38 @@ local function highlight_pipeline(starter_entity, player_index)
     local function get_directions(entity_position, entity_neighbours)
         local table_entry = 0
         local directions_table = {}
-        for _, neighbour in pairs(entity_neighbours) do
-            local neighbour_unit_number = neighbour.unit_number
+        for _, neighbour_unit_number in pairs(entity_neighbours) do
+            --local neighbour_unit_number = neighbour.unit_number
             local current_neighbour = read_entity_data[neighbour_unit_number]
-            if current_neighbour and not (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) then
-                directions_table[get_direction(entity_position, current_neighbour[1])] = true
+            if current_neighbour then
+                --if not (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) then
+                    directions_table[get_direction(entity_position, current_neighbour[1])] = true
+                --end
             else
-                directions_table[get_direction(entity_position, neighbour.position)] = true
+                local alternate_neighbour = read_neighbour_data[neighbour_unit_number]
+                if alternate_neighbour then
+                    directions_table[get_direction(entity_position, alternate_neighbour[1])] = true
+                end
             end
         end
         for directions,_ in pairs(directions_table) do
             table_entry = table_entry + (2^directions)
         end
         return table_entry
+    end
+
+    local function draw_pump_marker(position, type, direction, pump_neighbours)
+        local name = pipe_highlight_markers.pump[type][direction]
+        if type == 'bad' then
+            --get_directions(position, pump_neighbours)
+            name = pipe_highlight_markers.pump[type][direction] .. directional_table[get_directions(position, pump_neighbours)]
+        end
+        markers_made = markers_made + 1
+        all_markers[markers_made] =
+            create {
+            name = name,
+            position = position
+        }
     end
 
     --? Gather and cache pipeline info.
@@ -356,25 +307,32 @@ local function highlight_pipeline(starter_entity, player_index)
             tracked_orphans[entity_unit_number] = true
         end
         --? Ensures reading and marking no more than maximum pipes per the setting.
-        if pipes_read < max_pipes then
-            for _, neighbour in pairs(entity_neighbours) do
-                --? Pre-cache all data
-                local neighbour_type = neighbour.type
-                local neighbour_name = neighbour.name
-                local neighbour_position = neighbour.position
-                local neighbour_unit_number = neighbour.unit_number
-                --? Make sure we stick with pipes/pumps and don't read disallowed names (Such as factorissimo)
-                if allowed_types[neighbour_type] and not not_allowed_names[neighbour_name] then
-                    --? Verify we haven't been here before
-                    if not read_entity_data[neighbour_unit_number] then
-                        --? Step to next pipe
+        for neighbour_index_number, neighbour in pairs(entity_neighbours) do
+            --? Pre-cache all data
+            local neighbour_type = neighbour.type
+            local neighbour_name = neighbour.name
+            local neighbour_position = neighbour.position
+            local neighbour_unit_number = neighbour.unit_number
+            entity_neighbours[neighbour_index_number] = neighbour_unit_number
+            --? Make sure we stick with pipes/pumps and don't read disallowed names (Such as factorissimo)
+            if allowed_types[neighbour_type] and not not_allowed_names[neighbour_name] then
+                --? Verify we haven't been here before
+                if not read_entity_data[neighbour_unit_number] then
+                    if pipes_read < max_pipes then
+                    --? Step to next pipe
                         read_pipeline(neighbour, neighbour_unit_number, neighbour_position, neighbour_type, neighbour_name)
                     end
-                else --? Mark objects that aren't allowed to be traversed to. (Endpoints such as storage-tank, oil-refinery, etc.)
-                    local current_direction = get_direction(entity_position, neighbour_position)
-                    draw_marker(Position.translate(entity_position, current_direction, 1), 'good', 2 ^ Position.opposite_direction(current_direction))
-                    all_entities_marked[neighbour_unit_number] = true
                 end
+            else --? Mark objects that aren't allowed to be traversed to. (Endpoints such as storage-tank, oil-refinery, etc.)
+                read_neighbour_data[neighbour_unit_number] = {
+                    neighbour_position,
+                    neighbour_type,
+                    neighbour_name,
+                    neighbour
+                }
+                local current_direction = get_direction(entity_position, neighbour_position)
+                draw_marker(Position.translate(entity_position, current_direction, 1), 'good', 2 ^ Position.opposite_direction(current_direction))
+                all_entities_marked[neighbour_unit_number] = true
             end
         end
     end
@@ -389,14 +347,14 @@ local function highlight_pipeline(starter_entity, player_index)
     local function step_to_junction(entity_unit_number)
         --? Grab cached data. Removes need for API calls alltogether at this stage.
         local entity = read_entity_data[entity_unit_number]
-        if entity[3] == 'pump' then
-            draw_pump_marker(entity[1], 'bad', entity[5].direction)
+        if entity[3] == 'pump' and not draw_dashes_names[entity[4]] then
+            draw_pump_marker(entity[1], 'bad', entity[5].direction, entity[2])
         else
             draw_marker(entity[1], 'bad', get_directions(entity[1], entity[2]))
         end
         all_entities_marked[entity_unit_number] = true
-        for _, neighbour in pairs(entity[2]) do
-            local neighbour_unit_number = neighbour.unit_number
+        for _, neighbour_unit_number in pairs(entity[2]) do
+            --!local neighbour_unit_number = neighbour.unit_number
             local current_neighbour = read_entity_data[neighbour_unit_number]
             if current_neighbour then
                 if draw_dashes_types[entity[3]] or draw_dashes_names[entity[4]] then
@@ -416,20 +374,20 @@ local function highlight_pipeline(starter_entity, player_index)
         player.print(orphan_counter .. ' dead end pipes found.')
         for unit_number, _ in pairs(tracked_orphans) do
             local current_orphan = read_entity_data[unit_number]
-            markers_made = markers_made + 1
-            all_markers[markers_made] =
-                create {
-                name = 'picker-pipe-marker-box-bad',
-                position = current_orphan[1]
-            }
-            if current_orphan[3] == 'pump' then
-                draw_pump_marker(current_orphan[1], 'bad', current_orphan[5].direction)
+            if current_orphan[3] == 'pump' and not draw_dashes_names[current_orphan[4]] then
+                draw_pump_marker(current_orphan[1], 'bad', current_orphan[5].direction, current_orphan[2])
             else
+                markers_made = markers_made + 1
+                all_markers[markers_made] =
+                    create {
+                    name = 'picker-pipe-marker-box-bad',
+                    position = current_orphan[1]
+                }
                 draw_marker(current_orphan[1], 'bad', get_directions(current_orphan[1], current_orphan[2]))
             end
             all_entities_marked[unit_number] = true
-            for _, neighbour in pairs(current_orphan[2]) do
-                local neighbour_unit_number = neighbour.unit_number
+            for _, neighbour_unit_number in pairs(current_orphan[2]) do
+                --local neighbour_unit_number = neighbour.unit_number
                 local current_neighbour = read_entity_data[neighbour_unit_number]
                 if current_neighbour then
                         if draw_dashes_types[current_orphan[3]] or draw_dashes_names[current_orphan[4]] then
@@ -447,8 +405,8 @@ local function highlight_pipeline(starter_entity, player_index)
         for unit_number, current_entity in pairs(read_entity_data) do
             if not all_entities_marked[unit_number] then
                 if draw_dashes_types[current_entity[3]] or draw_dashes_names[current_entity[4]] then
-                    for _, neighbour in pairs(current_entity[2]) do
-                        local neighbour_unit_number = neighbour.unit_number
+                    for _, neighbour_unit_number in pairs(current_entity[2]) do
+                        --!local neighbour_unit_number = neighbour.unit_number
                         local current_neighbour = read_entity_data[neighbour_unit_number]
                         if current_neighbour
                             and (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]])
@@ -457,7 +415,7 @@ local function highlight_pipeline(starter_entity, player_index)
                         end
                     end
                 end
-                if current_entity[3] == 'pump' then
+                if current_entity[3] == 'pump' and not draw_dashes_names[current_entity[4]] then
                     draw_pump_marker(current_entity[1], 'normal', current_entity[5].direction)
                 else
                     draw_marker(current_entity[1], 'normal', get_directions(current_entity[1], current_entity[2]))
@@ -469,15 +427,15 @@ local function highlight_pipeline(starter_entity, player_index)
         for unit_number, current_entity in pairs(read_entity_data) do
             if not all_entities_marked[unit_number] then
                 if draw_dashes_types[current_entity[3]] or draw_dashes_names[current_entity[4]] then
-                    for _, neighbour in pairs(current_entity[2]) do
-                        local neighbour_unit_number = neighbour.unit_number
+                    for _, neighbour_unit_number in pairs(current_entity[2]) do
+                        --!local neighbour_unit_number = neighbour.unit_number
                         local current_neighbour = read_entity_data[neighbour_unit_number]
                         if current_neighbour and not all_entities_marked[neighbour_unit_number] and (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) then
                             draw_dashes(current_entity[1], current_neighbour[1], 'good')
                         end
                     end
                 end
-                if current_entity[3] == 'pump' then
+                if current_entity[3] == 'pump' and not draw_dashes_names[current_entity[4]] then
                     draw_pump_marker(current_entity[1], 'good', current_entity[5].direction)
                 else
                     draw_marker(current_entity[1], 'good', get_directions(current_entity[1], current_entity[2]))

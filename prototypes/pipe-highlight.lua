@@ -25,79 +25,111 @@ local base_entity = {
 }
 
 local dot_table = {
-    'picker-pipe-dot',
-    'picker-pipe-dot-good',
-    'picker-pipe-dot-bad'
+    ['picker-pipe-dot'] = 'pipe-marker-dot',
+    ['picker-pipe-dot-good'] = 'pipe-marker-dot-good',
+    ['picker-pipe-dot-bad'] = 'pipe-marker-dot-bad'
 }
-
-local dot_image_table = {
-    'pipe-marker-dot',
-    'pipe-marker-dot-good',
-    'pipe-marker-dot-bad'
+local not_needed_bad_dots = {
+    [21] = '-nse',
+    [69] = '-new',
+    [81] = '-nsw',
+    [84] = '-sew',
+    [85] = '-nsew'
 }
-
 local directional_table = {
-    '',
-    '-n',
-    '-e',
-    '-ne',
-    '-s',
-    '-ns',
-    '-se',
-    '-nse',
-    '-w',
-    '-nw',
-    '-ew',
-    '-new',
-    '-sw',
-    '-nsw',
-    '-sew',
-    '-nsew'
+    ["0"] = '',
+    [1] = '-n',
+    [4] = '-e',
+    [5] = '-ne',
+    [16] = '-s',
+    [17] = '-ns',
+    [20] = '-se',
+    [21] = '-nse',
+    [64] = '-w',
+    [65] = '-nw',
+    [68] = '-ew',
+    [69] = '-new',
+    [80] = '-sw',
+    [81] = '-nsw',
+    [84] = '-sew',
+    [85] = '-nsew'
 }
 local new_dots = {}
-for index,dots in pairs(dot_table) do
+for dots,images in pairs(dot_table) do
     for direction_index,directions in pairs(directional_table) do
-        local current_entity = util.table.deepcopy(base_entity)
-        current_entity.type = "corpse"
-        current_entity.name = dots .. directions
-        current_entity.animation.shift = {0, -0.1}
-        if direction_index == 1 then
-            current_entity.final_render_layer = 'light-effect'
+        if not (dots == "picker-pipe-dot-bad" and not_needed_bad_dots[direction_index]) then
+            local current_entity = util.table.deepcopy(base_entity)
+            current_entity.type = "corpse"
+            current_entity.name = dots .. directions
+            current_entity.animation.shift = {0, -0.1}
+            if direction_index == "0" then
+                current_entity.final_render_layer = 'light-effect'
+            end
+                current_entity.animation.filename = '__PickerPipeTools__/graphics/entity/markers/' .. images .. directions .. '.png'
+            if direction_index == "0" then
+                current_entity.animation.shift = {-0.5, -0.6}
+                current_entity.animation.scale = 0.5
+            end
+            new_dots[#new_dots + 1] = current_entity
         end
-        current_entity.animation.filename = '__PickerPipeTools__/graphics/entity/markers/' .. dot_image_table[index] .. directions .. '.png'
-        --current_entity.animation.scale = 0.5
-        new_dots[#new_dots + 1] = current_entity
     end
 end
 
 local pump_marker_table = {
-    'picker-pump-marker',
-    'picker-pump-marker-good',
-    'picker-pump-marker-bad'
+    ['picker-pump-marker'] = 'pump-marker',
+    ['picker-pump-marker-good'] = 'pump-marker-good',
 }
-local pump_marker_image_table ={
-    'pump-marker',
-    'pump-marker-good',
-    'pump-marker-bad'
-}
-local pump_directions ={
+local pump_directions = {
     '-n',
     '-e',
     '-s',
     '-w'
 }
 
-for index,pump_marker_name in pairs(pump_marker_table) do
-    for direction_index,directions in pairs(pump_directions) do
+for pump_marker_name,images in pairs(pump_marker_table) do
+    for _,directions in pairs(pump_directions) do
         local current_entity = util.table.deepcopy(base_entity)
         current_entity.type = "corpse"
         current_entity.name = pump_marker_name .. directions
         current_entity.animation.shift = {0, -0.1}
-        if direction_index == 1 then
-            current_entity.final_render_layer = 'light-effect'
-        end
-        current_entity.animation.filename = '__PickerPipeTools__/graphics/entity/markers/' .. pump_marker_image_table[index] .. directions .. '.png'
-        --current_entity.animation.scale = 0.5
+        current_entity.animation.filename = '__PickerPipeTools__/graphics/entity/markers/' .. images .. directions .. '.png'
+        new_dots[#new_dots + 1] = current_entity
+    end
+end
+local red_pump_marker_names =
+{
+    ['-n'] = {
+        '',
+        '-n',
+        '-s',
+        '-ns'
+    },
+    ['-e'] = {
+        '',
+        '-e',
+        '-w',
+        '-ew'
+    },
+    ['-s'] = {
+        '',
+        '-n',
+        '-s',
+        '-ns'
+    },
+    ['-w'] = {
+        '',
+        '-e',
+        '-w',
+        '-ew'
+    }
+}
+for direction, sub_directions in pairs(red_pump_marker_names) do
+    for _,sub_direction in pairs(sub_directions) do
+        local current_entity = util.table.deepcopy(base_entity)
+        current_entity.type = "corpse"
+        current_entity.name = 'picker-pump-marker-bad' .. direction .. sub_direction
+        current_entity.animation.shift = {0, -0.1}
+        current_entity.animation.filename = '__PickerPipeTools__/graphics/entity/markers/pump-marker-bad' .. direction .. sub_direction .. '.png'
         new_dots[#new_dots + 1] = current_entity
     end
 end
@@ -136,20 +168,6 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
     marker_beams.width = 1.0
     marker_beams.damage_interval = 2000000000
     marker_beams.action = nil
-    --[[{
-      type = "direct",
-      action_delivery =
-      {
-        type = "instant",
-        target_effects =
-        {
-          {
-            type = "damage",
-            damage = { amount = 0, type = "electric"}
-          }
-        }
-      }
-    }]]--
     marker_beams.start = {
         filename = "__core__/graphics/empty.png",
         line_length = 1,
@@ -158,7 +176,6 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
         frame_count = 1,
         axially_symmetrical = false,
         direction_count = 1,
-        --shift = {-0.03125, 0},
         hr_version =
         {
             filename = "__core__/graphics/empty.png",
@@ -168,8 +185,6 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
             frame_count = 1,
             axially_symmetrical = false,
             direction_count = 1,
-            --shift = {0.53125, 0},
-            --scale = 0.5
         }
     }
     marker_beams.ending = {
@@ -180,8 +195,6 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
         frame_count = 1,
         axially_symmetrical = false,
         direction_count = 1,
-        --shift = {-0.03125, 0},
-        --scale = 0.5,
         hr_version =
         {
             filename = "__core__/graphics/empty.png",
@@ -191,8 +204,6 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
             frame_count = 1,
             axially_symmetrical = false,
             direction_count = 1,
-            --shift = {0.53125, 0},
-            --scale = 0.5
         }
     }
     -- TODO 0.17 version
