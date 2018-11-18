@@ -500,23 +500,21 @@ local function get_pipeline(event)
     pdata.current_marker_table = pdata.current_marker_table or {}
 
     local selection = player.selected
-    if selection then
-        if allowed_types[selection.type] then
+    if selection and allowed_types[selection.type] then
             if not pdata.current_pipeline_table[selection.unit_number] then
-                destroy_markers(pdata.current_marker_table)
-                pdata.current_pipeline_table = nil
-                pdata.current_marker_table = nil
+                if next(pdata.current_pipeline_table) then
+                    destroy_markers(pdata.current_marker_table)
+                    pdata.current_pipeline_table = nil
+                    pdata.current_marker_table = nil
+                end
                 highlight_pipeline(selection, event.player_index)
             end
-        elseif event.last_entity and allowed_types[event.last_entity.type] then
+    else
+        if next(pdata.current_pipeline_table) then
             destroy_markers(pdata.current_marker_table)
             pdata.current_pipeline_table = nil
             pdata.all_markers = nil
         end
-    elseif event.last_entity and allowed_types[event.entity.type] then
-        destroy_markers(pdata.current_marker_table)
-        pdata.current_pipeline_table = nil
-        pdata.all_markers = nil
     end
 end
 Event.register(defines.events.on_selected_entity_changed, get_pipeline)
