@@ -20,7 +20,7 @@ local ugs = {
 }
 
 local function _find_mark(entity)
-    return entity.surface.find_entity('picker-pipe-marker-box-bad', entity.position)
+    return entity.surface.find_entity('picker-orphan-pipe-marker-box-bad', entity.position)
 end
 
 local function _destroy_mark(entity)
@@ -43,7 +43,7 @@ local function find_orphans(event)
 
                 if not_con and not _find_mark(entity) then
                     entity.surface.create_entity {
-                        name = 'picker-pipe-marker-box-bad',
+                        name = 'picker-orphan-pipe-marker-box-bad',
                         position = entity.position,
                         force = player.force,
                     }

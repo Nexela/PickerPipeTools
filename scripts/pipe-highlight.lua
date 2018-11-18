@@ -259,7 +259,7 @@ local function highlight_pipeline(starter_entity, player_index)
         }
     end
 
-    local function get_directions(entity_position, entity_neighbours)
+    local function get_directions(entity_position, entity_neighbours, pump)
         local table_entry = 0
         local directions_table = {}
         for _, neighbour_unit_number in pairs(entity_neighbours) do
@@ -275,6 +275,16 @@ local function highlight_pipeline(starter_entity, player_index)
                 end
             end
         end
+        if pump then
+            if (entity_neighbours[1] and not entity_neighbours[2]) then
+                local neighbour_to_check = (read_entity_data[entity_neighbours[1]] and read_entity_data[entity_neighbours[1]][1]) or (read_neighbour_data[entity_neighbours[1]] and read_neighbour_data[entity_neighbours[1]][1])
+                local check_direction = get_direction(neighbour_to_check, entity_position)
+                local rail_connection = player.surface.find_entities_filtered {position = Position.translate(entity_position, check_direction, 1.5), type = "straight-rail"}[1]
+                if rail_connection then
+                    directions_table[check_direction] = true
+                end
+            end
+        end
         for directions,_ in pairs(directions_table) do
             table_entry = table_entry + (2^directions)
         end
@@ -284,7 +294,7 @@ local function highlight_pipeline(starter_entity, player_index)
     local function draw_pump_marker(position, type, direction, pump_neighbours)
         local name = pipe_highlight_markers.pump[type][direction]
         if type == 'bad' then
-            name = pipe_highlight_markers.pump[type][direction] .. directional_table[get_directions(position, pump_neighbours)]
+            name = pipe_highlight_markers.pump[type][direction] .. directional_table[get_directions(position, pump_neighbours, true)]
         end
         markers_made = markers_made + 1
         all_markers[markers_made] =
@@ -308,8 +318,25 @@ local function highlight_pipeline(starter_entity, player_index)
         }
         --? Checks for orphans
         if #entity_neighbours < 2 then
-            orphan_counter = orphan_counter + 1
-            tracked_orphans[entity_unit_number] = true
+            if entity_type == 'pump' and not draw_dashes_names[entity_name] then
+                if (#entity_neighbours == 1) then
+                    local check_direction = get_direction(entity_neighbours[1].position, entity_position)
+                    local rail_connection = player.surface.find_entities_filtered {position = Position.translate(entity_position, check_direction, 1.5), type = "straight-rail"}[1]
+                    if rail_connection then
+                        local current_direction = get_direction(entity_position, rail_connection.position)
+                        draw_marker(Position.translate(entity_position, current_direction, 1.5), 'good', 2 ^ Position.opposite_direction(current_direction))
+                    else
+                        orphan_counter = orphan_counter + 1
+                        tracked_orphans[entity_unit_number] = true
+                    end
+                else
+                    orphan_counter = orphan_counter + 1
+                    tracked_orphans[entity_unit_number] = true
+                end
+            else
+                orphan_counter = orphan_counter + 1
+                tracked_orphans[entity_unit_number] = true
+            end
         end
         --? Ensures reading and marking no more than maximum pipes per the setting.
         for neighbour_index_number, neighbour in pairs(entity_neighbours) do
@@ -336,7 +363,13 @@ local function highlight_pipeline(starter_entity, player_index)
                     neighbour
                 }
                 local current_direction = get_direction(entity_position, neighbour_position)
-                draw_marker(Position.translate(entity_position, current_direction, 1), 'good', 2 ^ Position.opposite_direction(current_direction))
+                local draw_marker_distance
+                if entity_type == 'pump' then
+                    draw_marker_distance = 1.5
+                else
+                    draw_marker_distance = 1
+                end
+                draw_marker(Position.translate(entity_position, current_direction, draw_marker_distance), 'good', 2 ^ Position.opposite_direction(current_direction))
                 all_entities_marked[neighbour_unit_number] = true
             end
         end

@@ -321,6 +321,26 @@ data:extend {
     merge {
         base_entity,
         {
+            name = 'picker-orphan-pipe-marker-box-bad',
+            icon = '__PickerPipeTools__/graphics/entity/markers/32x32highlighterbad.png',
+            --time_before_removed = 60 * 20,
+            collision_box = {{0, 0}, {0, 0}},
+            time_before_removed = 60*10,
+            final_render_layer = 'selection-box',
+            animation = {
+                width = 64,
+                height = 64,
+                frame_count = 1,
+                direction_count = 1,
+                scale = 0.5,
+                shift = {-0.5, -0.5},
+                filename = '__PickerPipeTools__/graphics/entity/markers/32x32highlighterbad.png'
+            }
+        }
+    },
+    merge {
+        base_entity,
+        {
             name = 'picker-pipe-marker-box-good',
             icon = '__PickerPipeTools__/graphics/entity/markers/32x32highlightergood.png',
             --time_before_removed = 60 * 20,
