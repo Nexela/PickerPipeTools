@@ -31,6 +31,9 @@ local clamped_name = {
     [85] = '-clamped-NSEW'
 }
 
+local not_clampable_pipes = {
+    ['4-to-4-pipe'] = true,
+}
 local yellow = {r = 1, g = 1}
 local green = {g = 1}
 local red = {r = 1}
@@ -340,7 +343,7 @@ end
 local function toggle_pipe_clamp(event)
     local player, _ = Player.get(event.player_index)
     local selection = player.selected
-    if selection and selection.type == 'pipe' and selection.force == player.force then
+    if selection and selection.type == 'pipe' and selection.force == player.force and not not_clampable_pipes[selection.name] then
         local clamped = string.find(selection.name, '%-clamped%-')
         if not clamped then
             clamp_pipe(selection, player, true)
@@ -356,7 +359,7 @@ local function toggle_area_clamp(event)
         local clamp = event.name == defines.events.on_player_selected_area
         local player = game.players[event.player_index]
         for _, entity in pairs(event.entities) do
-            if entity.valid and entity.type == 'pipe' then --? Verify entity still exists. Un_clamp fires pipe_autoclamp_clamp which may replace an entity in the event.entities table
+            if entity.valid and entity.type == 'pipe' and not not_clampable_pipes[entity.name] then --? Verify entity still exists. Un_clamp fires pipe_autoclamp_clamp which may replace an entity in the event.entities table
                 local clamped = string.find(entity.name, '%-clamped%-')
                 if clamp and not clamped then
                     clamp_pipe(entity, player)
@@ -370,7 +373,7 @@ end
 Event.register({defines.events.on_player_selected_area, defines.events.on_player_alt_selected_area}, toggle_area_clamp)
 
 local function on_built_entity(event)
-    if event.created_entity and event.created_entity.type == 'pipe' then
+    if event.created_entity and event.created_entity.type == 'pipe' and not not_clampable_pipes[event.created_entity.name] then
         local _, pdata = Player.get(event.player_index)
         local position_to_save = event.created_entity.position --? Store position ahead of time. Entity can be invalidated (replaced) during the following function before storing it's position.
         pipe_autoclamp_clamp(event, false)
