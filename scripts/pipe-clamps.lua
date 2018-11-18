@@ -352,7 +352,7 @@ local function toggle_pipe_clamp(event)
         end
     end
 end
-Event.register('picker-toggle-pipe-clamp', toggle_pipe_clamp)
+
 
 local function toggle_area_clamp(event)
     if event.item == 'picker-pipe-clamper' then
@@ -370,7 +370,6 @@ local function toggle_area_clamp(event)
         end
     end
 end
-Event.register({defines.events.on_player_selected_area, defines.events.on_player_alt_selected_area}, toggle_area_clamp)
 
 local function on_built_entity(event)
     if event.created_entity and event.created_entity.type == 'pipe' and not not_clampable_pipes[event.created_entity.name] then
@@ -397,6 +396,13 @@ local function toggle_auto_clamp(event)
     player.print({'pipe-tools.auto-clamp', pdata.disable_auto_clamp and {'pipe-tools.off'} or {'pipe-tools.on'}})
     return pdata.disable_auto_clamp
 end
-Event.register("picker-auto-clamp-toggle", toggle_auto_clamp)
-commands.add_command('autoclamp', {"autoclamp-commands.toggle-autoclamp"}, toggle_auto_clamp)
-remote.add_interface(script.mod_name, require('lib/interface'))
+
+if settings.startup['picker-tool-pipe-clamps'].value then
+    Event.register('picker-toggle-pipe-clamp', toggle_pipe_clamp)
+
+    Event.register({defines.events.on_player_selected_area, defines.events.on_player_alt_selected_area}, toggle_area_clamp)
+
+    Event.register("picker-auto-clamp-toggle", toggle_auto_clamp)
+    commands.add_command('autoclamp', {"autoclamp-commands.toggle-autoclamp"}, toggle_auto_clamp)
+    remote.add_interface(script.mod_name, require('lib/interface'))
+end

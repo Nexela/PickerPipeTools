@@ -14,6 +14,13 @@ data:extend{
         order = 'tool-pipe-cleaner'
     },
     {
+        type = 'bool-setting',
+        name = 'picker-tool-pipe-clamps',
+        setting_type = 'startup',
+        default_value = true,
+        order = 'tool-pipe-cleaner'
+    },
+    {
         type = 'int-setting',
         name = 'picker-max-checked-pipes',
         setting_type = 'runtime-global',
