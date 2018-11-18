@@ -45,7 +45,7 @@ local function find_orphans(event)
                     entity.surface.create_entity {
                         name = 'picker-orphan-pipe-marker-box-bad',
                         position = entity.position,
-                        force = player.force,
+                        force = player.force
                     }
                 end
             end

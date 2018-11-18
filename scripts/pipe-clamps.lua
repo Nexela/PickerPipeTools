@@ -32,7 +32,7 @@ local clamped_name = {
 }
 
 local not_clampable_pipes = {
-    ['4-to-4-pipe'] = true,
+    ['4-to-4-pipe'] = true
 }
 local yellow = {r = 1, g = 1}
 local green = {g = 1}
@@ -72,7 +72,7 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, autocl
         local filter_table = entity.fluidbox.get_filter(1)
         local event_data = {
             entity = entity,
-            player_index = player.index,
+            player_index = player.index
         }
         script.raise_event(defines.events.script_raised_destroy, event_data)
         new =
@@ -194,7 +194,6 @@ end
     end
     return fluid_box_counter
 end]]
-
 local function check_sub_neighbours(sub_neighbours, neighbour, entity)
     local fluid_box_counter = 0
     for _, subsequent_entities in pairs(sub_neighbours) do
@@ -226,7 +225,7 @@ local function pipe_autoclamp_clamp(event, unclamp)
                 local neighbour_fluid = get_pipe_info(neighbour).fluid_name
                 if current_fluid then
                     --! Ensure fluids don't mix
-                    if neighbour_fluid and (neighbour_fluid ~= current_fluid) then                                                  --? If the neighbour has a fluid and they don't match, we're clamping it. Period.
+                    if neighbour_fluid and (neighbour_fluid ~= current_fluid) then --? If the neighbour has a fluid and they don't match, we're clamping it. Period.
                         neighbour.surface.create_entity {
                             name = 'flying-text',
                             position = neighbour.position,
@@ -236,18 +235,18 @@ local function pipe_autoclamp_clamp(event, unclamp)
                             color = red
                         }
                         pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                    elseif not unclamp and not pdata.disable_auto_clamp then	                                                    --? This is not a logic duplicate of below. This branch is different and has a different purpose than above.
+                    elseif not unclamp and not pdata.disable_auto_clamp then --? This is not a logic duplicate of below. This branch is different and has a different purpose than above.
                         --! If the player wasn't unclamping, do further checks if auto clamp is on.
-                        if last_pipe and neighbour ~= last_pipe then                                                                --? If there's a last pipe make sure it isnt the neighbour. If it's not clamp it. Allows parallel laying and T-ing into a pipeline.
+                        if last_pipe and neighbour ~= last_pipe then --? If there's a last pipe make sure it isnt the neighbour. If it's not clamp it. Allows parallel laying and T-ing into a pipeline.
                             pipes_to_clamp[#pipes_to_clamp + 1] = check_sub_neighbours(neighbour.neighbours, neighbour, entity)
-                        elseif not last_pipe then                                                                                   --? Explicit check to make sure there isn't a last pipe. I don't want false to the above but then last pipe getting clamped anyways.
+                        elseif not last_pipe then --? Explicit check to make sure there isn't a last pipe. I don't want false to the above but then last pipe getting clamped anyways.
                             pipes_to_clamp[#pipes_to_clamp + 1] = check_sub_neighbours(neighbour.neighbours, neighbour, entity)
                         end
                     end
-                elseif not unclamp and not pdata.disable_auto_clamp then                                                           --? If the current pipe doesn't have a fluid, make sure the player wasn't just unclamping, and make sure auto clamp is on.
+                elseif not unclamp and not pdata.disable_auto_clamp then --? If the current pipe doesn't have a fluid, make sure the player wasn't just unclamping, and make sure auto clamp is on.
                     --! <AUTO CLAMP MODE>
-                    if last_pipe and neighbour ~= last_pipe and get_distance(entity, last_pipe) == 1 then                           --? This will see if last pipe exists, make sure that the neighbour isn't the last pipe, and if it isn't, see if it's within a tile (Tracking last pipes fluid)
-                        if last_pipe_data.fluid_name and neighbour_fluid and (last_pipe_data.fluid_name ~= neighbour_fluid) then    --? Within, if the last pipe has a fluid name see if the neighbour has a fluid. If so, do they match? If not clamp that neighbour. Allows parallel pipe laying of dissimilar fluids.
+                    if last_pipe and neighbour ~= last_pipe and get_distance(entity, last_pipe) == 1 then --? This will see if last pipe exists, make sure that the neighbour isn't the last pipe, and if it isn't, see if it's within a tile (Tracking last pipes fluid)
+                        if last_pipe_data.fluid_name and neighbour_fluid and (last_pipe_data.fluid_name ~= neighbour_fluid) then --? Within, if the last pipe has a fluid name see if the neighbour has a fluid. If so, do they match? If not clamp that neighbour. Allows parallel pipe laying of dissimilar fluids.
                             neighbour.surface.create_entity {
                                 name = 'flying-text',
                                 position = neighbour.position,
@@ -257,17 +256,17 @@ local function pipe_autoclamp_clamp(event, unclamp)
                                 color = red
                             }
                             pipes_to_clamp[#pipes_to_clamp + 1] = neighbour
-                        else                                                                                                        --? Clamp the neighbour if it's part of an existing pipeline
+                        else --? Clamp the neighbour if it's part of an existing pipeline
                             pipes_to_clamp[#pipes_to_clamp + 1] = check_sub_neighbours(neighbour.neighbours, neighbour, entity)
                         end
-                    elseif not last_pipe or (last_pipe and get_distance(entity, last_pipe) ~= 1) then                               --? Catches all other cases
+                    elseif not last_pipe or (last_pipe and get_distance(entity, last_pipe) ~= 1) then --? Catches all other cases
                         pipes_to_clamp[#pipes_to_clamp + 1] = check_sub_neighbours(neighbour.neighbours, neighbour, entity)
                     end
                 end
-            elseif not pdata.disable_auto_clamp and neighbour.type == 'storage-tank' then                                           --? If it's not a pipe, we need to clamp our own pipe instead.
-                local neighbour_fluid = get_pipe_info(neighbour).fluid_name	                                                        --? NOTES: Try simple entity placement to prevent spam.
-                if current_fluid then                                                                                               --?
-                    if current_fluid ~= neighbour_fluid then                                                                        --?
+            elseif not pdata.disable_auto_clamp and neighbour.type == 'storage-tank' then --? If it's not a pipe, we need to clamp our own pipe instead.
+                local neighbour_fluid = get_pipe_info(neighbour).fluid_name --? NOTES: Try simple entity placement to prevent spam.
+                if current_fluid then --?
+                    if current_fluid ~= neighbour_fluid then --?
                         entity.surface.create_entity {
                             name = 'flying-text',
                             position = entity.position,
@@ -279,7 +278,7 @@ local function pipe_autoclamp_clamp(event, unclamp)
                         clamp_self = neighbour
                     end
                 elseif last_pipe and neighbour ~= last_pipe and get_distance(entity, last_pipe) == 1 then
-                    if last_pipe_data.fluid_name and neighbour_fluid and (last_pipe_data.fluid_name ~= neighbour_fluid) then        --? Last tracked fluid
+                    if last_pipe_data.fluid_name and neighbour_fluid and (last_pipe_data.fluid_name ~= neighbour_fluid) then --? Last tracked fluid
                         entity.surface.create_entity {
                             name = 'flying-text',
                             position = entity.position,
@@ -307,7 +306,7 @@ local function un_clamp_pipe(entity, player, area_unclamp)
     local filter_table = entity.fluidbox.get_filter(1)
     local event_data = {
         entity = entity,
-        player_index = player.index,
+        player_index = player.index
     }
     script.raise_event(defines.events.script_raised_destroy, event_data)
     local new =
@@ -353,7 +352,6 @@ local function toggle_pipe_clamp(event)
     end
 end
 
-
 local function toggle_area_clamp(event)
     if event.item == 'picker-pipe-clamper' then
         local clamp = event.name == defines.events.on_player_selected_area
@@ -379,7 +377,6 @@ local function on_built_entity(event)
         pdata.last_pipe_position = position_to_save
     end
 end
-Event.register(defines.events.on_built_entity, on_built_entity)
 
 local truthy = {['on'] = true, ['true'] = true}
 local falsey = {['off'] = true, ['false'] = true}
@@ -399,10 +396,10 @@ end
 
 if settings.startup['picker-tool-pipe-clamps'].value then
     Event.register('picker-toggle-pipe-clamp', toggle_pipe_clamp)
-
     Event.register({defines.events.on_player_selected_area, defines.events.on_player_alt_selected_area}, toggle_area_clamp)
+    Event.register(defines.events.on_built_entity, on_built_entity)
 
-    Event.register("picker-auto-clamp-toggle", toggle_auto_clamp)
-    commands.add_command('autoclamp', {"autoclamp-commands.toggle-autoclamp"}, toggle_auto_clamp)
-    remote.add_interface(script.mod_name, require('lib/interface'))
+    Event.register('picker-auto-clamp-toggle', toggle_auto_clamp)
+    commands.add_command('autoclamp', {'autoclamp-commands.toggle-autoclamp'}, toggle_auto_clamp)
 end
+remote.add_interface(script.mod_name, require('lib/interface'))

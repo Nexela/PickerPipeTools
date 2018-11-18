@@ -16,7 +16,6 @@ local function load_pipe_connections()
 end
 Event.register({Event.core_events.init, Event.core_events.load}, load_pipe_connections)
 
-
 --? Bit styled table. 2 ^ defines.direction is used for entry to the table. Only compatible with 4 way directions.
 local directional_table = {
     [0] = '',
@@ -90,7 +89,7 @@ local pipe_highlight_markers = {
     beam = {
         ['normal'] = 'picker-pipe-marker-beam',
         ['good'] = 'picker-pipe-marker-beam-good',
-        ['bad'] = 'picker-pipe-marker-beam-bad',
+        ['bad'] = 'picker-pipe-marker-beam-bad'
     }
 }
 
@@ -159,13 +158,15 @@ local function show_underground_sprites(event)
         local max_neighbours = pipe_connections[entity_data[4]] or 2
         if (#entity_data[2]) < max_neighbours then
             markers_made = markers_made + 1
-            all_markers[markers_made] = create {
+            all_markers[markers_made] =
+                create {
                 name = 'picker-pipe-marker-box-bad',
                 position = entity_data[1]
             }
         else
             markers_made = markers_made + 1
-            all_markers[markers_made] = create {
+            all_markers[markers_made] =
+                create {
                 name = 'picker-pipe-marker-box-good',
                 position = entity_data[1]
             }
@@ -268,9 +269,9 @@ local function highlight_pipeline(starter_entity, player_index)
         for _, neighbour_unit_number in pairs(entity_neighbours) do
             local current_neighbour = read_entity_data[neighbour_unit_number]
             if current_neighbour then
-                --if not (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) then
-                    directions_table[get_direction(entity_position, current_neighbour[1])] = true
                 --end
+                --if not (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) then
+                directions_table[get_direction(entity_position, current_neighbour[1])] = true
             else
                 local alternate_neighbour = read_neighbour_data[neighbour_unit_number]
                 if alternate_neighbour then
@@ -282,14 +283,14 @@ local function highlight_pipeline(starter_entity, player_index)
             if (entity_neighbours[1] and not entity_neighbours[2]) then
                 local neighbour_to_check = (read_entity_data[entity_neighbours[1]] and read_entity_data[entity_neighbours[1]][1]) or (read_neighbour_data[entity_neighbours[1]] and read_neighbour_data[entity_neighbours[1]][1])
                 local check_direction = get_direction(neighbour_to_check, entity_position)
-                local rail_connection = player.surface.find_entities_filtered {position = Position.translate(entity_position, check_direction, 1.5), type = "straight-rail"}[1]
+                local rail_connection = player.surface.find_entities_filtered {position = Position.translate(entity_position, check_direction, 1.5), type = 'straight-rail'}[1]
                 if rail_connection then
                     directions_table[check_direction] = true
                 end
             end
         end
-        for directions,_ in pairs(directions_table) do
-            table_entry = table_entry + (2^directions)
+        for directions, _ in pairs(directions_table) do
+            table_entry = table_entry + (2 ^ directions)
         end
         return table_entry
     end
@@ -327,7 +328,7 @@ local function highlight_pipeline(starter_entity, player_index)
                     --? Get directional relation from connected neighbour to pump
                     local check_direction = get_direction(entity_neighbours[1].position, entity_position)
                     --? Then translate in that direction outwards to see if there's a track.
-                    local rail_connection = player.surface.find_entities_filtered {position = Position.translate(entity_position, check_direction, 1.5), type = "straight-rail"}[1]
+                    local rail_connection = player.surface.find_entities_filtered {position = Position.translate(entity_position, check_direction, 1.5), type = 'straight-rail'}[1]
                     if rail_connection then
                         local current_direction = get_direction(entity_position, rail_connection.position)
                         draw_marker(Position.translate(entity_position, current_direction, 1.5), 'good', 2 ^ Position.opposite_direction(current_direction))
@@ -406,7 +407,7 @@ local function highlight_pipeline(starter_entity, player_index)
                 if draw_dashes_types[entity[3]] or draw_dashes_names[entity[4]] then
                     if draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]] then
                         draw_dashes(entity[1], current_neighbour[1], 'bad')
-                        --TODO 0.17 draw_dashes(current_neighbour[1], entity[1], 'bad')
+                    --TODO 0.17 draw_dashes(current_neighbour[1], entity[1], 'bad')
                     end
                 end
                 --? Check to see if it's still part of a pipeline. If it's a junction, it will not step any further.
@@ -438,13 +439,13 @@ local function highlight_pipeline(starter_entity, player_index)
             for _, neighbour_unit_number in pairs(current_orphan[2]) do
                 local current_neighbour = read_entity_data[neighbour_unit_number]
                 if current_neighbour then
-                        if draw_dashes_types[current_orphan[3]] or draw_dashes_names[current_orphan[4]] then
-                            if draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]] then
-                                draw_dashes(current_orphan[1], current_neighbour[1], 'bad')
-                                --TODO 0.17 draw_dashes(current_neighbour[1], current_orphan[1], 'bad')
-                            end
+                    if draw_dashes_types[current_orphan[3]] or draw_dashes_names[current_orphan[4]] then
+                        if draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]] then
+                            draw_dashes(current_orphan[1], current_neighbour[1], 'bad')
+                        --TODO 0.17 draw_dashes(current_neighbour[1], current_orphan[1], 'bad')
                         end
-                        if #current_neighbour[2] < 3 and not all_entities_marked[neighbour_unit_number] then
+                    end
+                    if #current_neighbour[2] < 3 and not all_entities_marked[neighbour_unit_number] then
                         step_to_junction(neighbour_unit_number)
                     end
                 end
@@ -455,9 +456,7 @@ local function highlight_pipeline(starter_entity, player_index)
                 if draw_dashes_types[current_entity[3]] or draw_dashes_names[current_entity[4]] then
                     for _, neighbour_unit_number in pairs(current_entity[2]) do
                         local current_neighbour = read_entity_data[neighbour_unit_number]
-                        if current_neighbour
-                            and (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]])
-                            and not all_entities_marked[neighbour_unit_number] then
+                        if current_neighbour and (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) and not all_entities_marked[neighbour_unit_number] then
                             draw_dashes(current_entity[1], current_neighbour[1], 'normal')
                         end
                     end
@@ -491,7 +490,7 @@ local function highlight_pipeline(starter_entity, player_index)
         end
     end
     if player.mod_settings['picker-count-pipes-highlighted'].value then
-        player.print(pipes_read .. " pipes found in currently selected network")
+        player.print(pipes_read .. ' pipes found in currently selected network')
     end
 end
 
@@ -509,20 +508,18 @@ local function get_pipeline(event)
                 pdata.current_marker_table = nil
                 highlight_pipeline(selection, event.player_index)
             end
-        else
+        elseif event.last_entity and allowed_types[event.last_entity.type] then
             destroy_markers(pdata.current_marker_table)
             pdata.current_pipeline_table = nil
             pdata.all_markers = nil
         end
-    else
+    elseif event.last_entity and allowed_types[event.entity.type] then
         destroy_markers(pdata.current_marker_table)
         pdata.current_pipeline_table = nil
         pdata.all_markers = nil
     end
 end
-
 Event.register(defines.events.on_selected_entity_changed, get_pipeline)
-
 
 local function clear_markers(event)
     local player, _ = Player.get(event.player_index)
@@ -536,4 +533,4 @@ local function clear_markers(event)
         end
     end
 end
-commands.add_command('clear-all-markers', {"highlight-commands.clear-markers"}, clear_markers)
+commands.add_command('clear-all-markers', {'highlight-commands.clear-markers'}, clear_markers)
