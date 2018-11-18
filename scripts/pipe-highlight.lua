@@ -17,7 +17,7 @@ end
 Event.register({Event.core_events.init, Event.core_events.load}, load_pipe_connections)
 
 
-
+--? Bit styled table. 2 ^ defines.direction is used for entry to the table. Only compatible with 4 way directions.
 local directional_table = {
     [0] = '',
     [1] = '-n',
@@ -59,6 +59,8 @@ local draw_dashes_names = {
     ['underground-mini-pump-t2'] = true,
     ['underground-mini-pump-t3'] = true
 }
+
+--? Entity creation name reference table
 local pipe_highlight_markers = {
     pump = {
         ['normal'] = {
@@ -111,7 +113,7 @@ local function get_direction(entity_position, neighbour_position)
             local adx, ady = abs(delta_x), abs(delta_y)
             if adx > ady then
                 return get_ew(delta_x)
-            else
+            else --? Exact diagonal relations get returned as a north/south relation.
                 return get_ns(delta_y)
             end
         end
@@ -262,6 +264,7 @@ local function highlight_pipeline(starter_entity, player_index)
     local function get_directions(entity_position, entity_neighbours, pump)
         local table_entry = 0
         local directions_table = {}
+        --? Store the direction as the index to the table. This allows multiple references to the same direction, such as in the case of pipemod pipes.
         for _, neighbour_unit_number in pairs(entity_neighbours) do
             local current_neighbour = read_entity_data[neighbour_unit_number]
             if current_neighbour then
@@ -275,7 +278,7 @@ local function highlight_pipeline(starter_entity, player_index)
                 end
             end
         end
-        if pump then
+        if pump then --? This just ensures marking against a rail.
             if (entity_neighbours[1] and not entity_neighbours[2]) then
                 local neighbour_to_check = (read_entity_data[entity_neighbours[1]] and read_entity_data[entity_neighbours[1]][1]) or (read_neighbour_data[entity_neighbours[1]] and read_neighbour_data[entity_neighbours[1]][1])
                 local check_direction = get_direction(neighbour_to_check, entity_position)
@@ -319,8 +322,11 @@ local function highlight_pipeline(starter_entity, player_index)
         --? Checks for orphans
         if #entity_neighbours < 2 then
             if entity_type == 'pump' and not draw_dashes_names[entity_name] then
+                --? If it's a pump, and it does have one neighbour, see if the other side is a rail.
                 if (#entity_neighbours == 1) then
+                    --? Get directional relation from connected neighbour to pump
                     local check_direction = get_direction(entity_neighbours[1].position, entity_position)
+                    --? Then translate in that direction outwards to see if there's a track.
                     local rail_connection = player.surface.find_entities_filtered {position = Position.translate(entity_position, check_direction, 1.5), type = "straight-rail"}[1]
                     if rail_connection then
                         local current_direction = get_direction(entity_position, rail_connection.position)
@@ -329,7 +335,7 @@ local function highlight_pipeline(starter_entity, player_index)
                         orphan_counter = orphan_counter + 1
                         tracked_orphans[entity_unit_number] = true
                     end
-                else
+                else --? If it's a pump and doesn't report having a neighbour, I'm not even gonna check if there's a track. It's an orphan.
                     orphan_counter = orphan_counter + 1
                     tracked_orphans[entity_unit_number] = true
                 end
@@ -338,7 +344,6 @@ local function highlight_pipeline(starter_entity, player_index)
                 tracked_orphans[entity_unit_number] = true
             end
         end
-        --? Ensures reading and marking no more than maximum pipes per the setting.
         for neighbour_index_number, neighbour in pairs(entity_neighbours) do
             --? Pre-cache all data
             local neighbour_type = neighbour.type
@@ -350,8 +355,9 @@ local function highlight_pipeline(starter_entity, player_index)
             if allowed_types[neighbour_type] and not not_allowed_names[neighbour_name] then
                 --? Verify we haven't been here before
                 if not read_entity_data[neighbour_unit_number] then
+                    --? Ensures reading and marking no more than maximum pipes per the setting.
                     if pipes_read < max_pipes then
-                    --? Step to next pipe
+                        --? Step to next pipe
                         read_pipeline(neighbour, neighbour_unit_number, neighbour_position, neighbour_type, neighbour_name)
                     end
                 end
@@ -364,11 +370,12 @@ local function highlight_pipeline(starter_entity, player_index)
                 }
                 local current_direction = get_direction(entity_position, neighbour_position)
                 local draw_marker_distance
-                if entity_type == 'pump' then
+                if entity_type == 'pump' then --? Pumps are longer. Marker has to be bumped a little further.
                     draw_marker_distance = 1.5
                 else
                     draw_marker_distance = 1
                 end
+                --? This marks from the neighbour to the current entity. This ensures properly aligned markers that connect to the current entity.
                 draw_marker(Position.translate(entity_position, current_direction, draw_marker_distance), 'good', 2 ^ Position.opposite_direction(current_direction))
                 all_entities_marked[neighbour_unit_number] = true
             end
@@ -385,6 +392,7 @@ local function highlight_pipeline(starter_entity, player_index)
     local function step_to_junction(entity_unit_number)
         --? Grab cached data. Removes need for API calls alltogether at this stage.
         local entity = read_entity_data[entity_unit_number]
+        --? Mark current entity
         if entity[3] == 'pump' and not draw_dashes_names[entity[4]] then
             draw_pump_marker(entity[1], 'bad', entity[5].direction, entity[2])
         else
@@ -392,15 +400,16 @@ local function highlight_pipeline(starter_entity, player_index)
         end
         all_entities_marked[entity_unit_number] = true
         for _, neighbour_unit_number in pairs(entity[2]) do
-            --!local neighbour_unit_number = neighbour.unit_number
             local current_neighbour = read_entity_data[neighbour_unit_number]
             if current_neighbour then
+                --? If it's a pump or certain other entities, draw dashes between it and the neighbour if that neighbour is also a pump or other certain entities.
                 if draw_dashes_types[entity[3]] or draw_dashes_names[entity[4]] then
                     if draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]] then
                         draw_dashes(entity[1], current_neighbour[1], 'bad')
                         --TODO 0.17 draw_dashes(current_neighbour[1], entity[1], 'bad')
                     end
                 end
+                --? Check to see if it's still part of a pipeline. If it's a junction, it will not step any further.
                 if #current_neighbour[2] < 3 and not all_entities_marked[neighbour_unit_number] then
                     step_to_junction(neighbour_unit_number)
                 end
@@ -440,12 +449,11 @@ local function highlight_pipeline(starter_entity, player_index)
                     end
                 end
             end
-        end
+        end --? Anything that wasn't marked as an orphan that is part of this pipeline will be marked in yellow.
         for unit_number, current_entity in pairs(read_entity_data) do
             if not all_entities_marked[unit_number] then
                 if draw_dashes_types[current_entity[3]] or draw_dashes_names[current_entity[4]] then
                     for _, neighbour_unit_number in pairs(current_entity[2]) do
-                        --!local neighbour_unit_number = neighbour.unit_number
                         local current_neighbour = read_entity_data[neighbour_unit_number]
                         if current_neighbour
                             and (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]])
@@ -462,12 +470,11 @@ local function highlight_pipeline(starter_entity, player_index)
                 all_entities_marked[unit_number] = true
             end
         end
-    else
+    else --? If there's not an orphan, mark the whole line green.
         for unit_number, current_entity in pairs(read_entity_data) do
             if not all_entities_marked[unit_number] then
                 if draw_dashes_types[current_entity[3]] or draw_dashes_names[current_entity[4]] then
                     for _, neighbour_unit_number in pairs(current_entity[2]) do
-                        --!local neighbour_unit_number = neighbour.unit_number
                         local current_neighbour = read_entity_data[neighbour_unit_number]
                         if current_neighbour and not all_entities_marked[neighbour_unit_number] and (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) then
                             draw_dashes(current_entity[1], current_neighbour[1], 'good')
