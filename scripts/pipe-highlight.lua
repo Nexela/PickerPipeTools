@@ -45,7 +45,8 @@ local allowed_types = {
 
 local not_allowed_names = {
     ['factory-fluid-dummy-connector'] = true,
-    ['factory-fluid-dummy-connector-south'] = true
+    ['factory-fluid-dummy-connector-south'] = true,
+    ['offshore-pump-output'] = true
 }
 
 --? Table for types and names to draw dashes between
@@ -500,6 +501,7 @@ local function get_pipeline(event)
     pdata.current_marker_table = pdata.current_marker_table or {}
 
     local selection = player.selected
+    -- TODO Faster check if table method possibly
     if selection and allowed_types[selection.type] then
             if not pdata.current_pipeline_table[selection.unit_number] then
                 if next(pdata.current_pipeline_table) then
