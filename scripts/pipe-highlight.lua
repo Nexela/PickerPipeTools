@@ -57,7 +57,8 @@ local draw_dashes_names = {
     ['underground-mini-pump'] = true,
     ['underground-mini-pump-t1'] = true,
     ['underground-mini-pump-t2'] = true,
-    ['underground-mini-pump-t3'] = true
+    ['underground-mini-pump-t3'] = true,
+    ['4-to-4-pipe'] = true
 }
 
 --? Entity creation name reference table
