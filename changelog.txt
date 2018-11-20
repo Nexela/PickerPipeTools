@@ -3,6 +3,7 @@ Version: 0.1.3
 Date: 19. 11. 2018
   Fixes:
     - AAI Industries Offshore pump causing graphical glitches with highlighter.
+    - Fix markers being drawn improperly on "Advanced Fluid Handling" 4-to-4 pipe
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.2
 Date: 15. 11. 2018
