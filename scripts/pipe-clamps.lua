@@ -12,6 +12,71 @@ defines.direction.east     == 2         4
 defines.direction.south     == 4        16
 defines.direction.west     == 6         64
 ]]
+
+local map_clamped_name = {
+    --[0] = "-clamped-none",
+    ['-clamped-N'] = {
+        name = '-clamped-single',
+        direction = defines.direction.north
+    },
+    ['-clamped-E'] = {
+        name = '-clamped-single',
+        direction = defines.direction.east
+    },
+    ['-clamped-NE'] = {
+        name = '-clamped-l',
+        direction = defines.direction.east
+    },
+    ['-clamped-S'] = {
+        name = '-clamped-single',
+        direction = defines.direction.south
+    },
+    ['-clamped-NS'] = {
+        name = '-clamped-i',
+        direction = defines.direction.north
+    },
+    ['-clamped-SE'] = {
+        name = '-clamped-l',
+        direction = defines.direction.south
+    },
+    ['-clamped-NSE'] = {
+        name = '-clamped-t',
+        direction = defines.direction.east
+    },
+    ['-clamped-W'] = {
+        name = '-clamped-single',
+        direction = defines.direction.west
+    },
+    ['-clamped-NW'] = {
+        name = '-clamped-l',
+        direction = defines.direction.north
+    },
+    ['-clamped-EW'] = {
+        name = '-clamped-i',
+        direction = defines.direction.east
+    },
+    ['-clamped-NEW'] = {
+        name = '-clamped-t',
+        direction = defines.direction.north
+    },
+    ['-clamped-SW'] = {
+        name = '-clamped-l',
+        direction = defines.direction.west
+    },
+    ['-clamped-NSW'] = {
+        name = '-clamped-t',
+        direction = defines.direction.west
+    },
+    ['-clamped-SEW'] = {
+        name = '-clamped-t',
+        direction = defines.direction.south
+    },
+    ['-clamped-NSEW'] = {
+        name = '-clamped-x',
+        direction = defines.direction.north
+    }
+}
+
 local clamped_name = {
     --[0] = "-clamped-none",
     [1] = '-clamped-N',
@@ -31,8 +96,58 @@ local clamped_name = {
     [85] = '-clamped-NSEW'
 }
 
+local clamped_name_match = {
+    --[0] = "-clamped-none",
+    [1] = '%-clamped%-N$',
+    [4] = '%-clamped%-E$',
+    [5] = '%-clamped%-NE$',
+    [16] = '%-clamped%-S$',
+    [17] = '%-clamped%-NS$',
+    [20] = '%-clamped%-SE$',
+    [21] = '%-clamped%-NSE$',
+    [64] = '%-clamped%-W$',
+    [65] = '%-clamped%-NW$',
+    [68] = '%-clamped%-EW$',
+    [69] = '%-clamped%-NEW$',
+    [80] = '%-clamped%-SW$',
+    [81] = '%-clamped%-NSW$',
+    [84] = '%-clamped%-SEW$',
+    [85] = '%-clamped%-NSEW$'
+}
+
+local function migrate_clamped_pipes()
+    local counter = 0
+    for _,surface in pairs(game.surfaces) do
+        for _,pipe in pairs(surface.find_entities_filtered({type = 'pipe'})) do
+            --local migrated = false
+            if string.find(pipe.name, "%-clamped%-") then
+                for table_entry,old_name in pairs(clamped_name) do
+                    local is_match = string.find(pipe.name, clamped_name_match[table_entry])
+                    if is_match then
+                        pipe.surface.create_entity {
+                            name = pipe.prototype.mineable_properties.products[1].name .. map_clamped_name[clamped_name[table_entry]].name,
+                            position = pipe.position,
+                            direction = map_clamped_name[clamped_name[table_entry]].direction,
+                            force = pipe.force,
+                            fast_replace = true,
+                            spill = false
+                        }
+                        counter = counter + 1
+                        --migrated = true
+                        break
+                    end
+                end
+            end
+        end
+    end
+    game.print(counter .. " clamps migrated to new pipes. Old clamped pipes have been removed. (Blueprints with them will still contain them.)")
+end
+script.on_configuration_changed(migrate_clamped_pipes)
+
 local not_clampable_pipes = {
-    ['4-to-4-pipe'] = true
+    ['4-to-4-pipe'] = true,
+    ['factory-fluid-dummy-connector'] = true,
+    ['factory-fluid-dummy-connector-south'] = true,
 }
 local yellow = {r = 1, g = 1}
 local green = {g = 1}
@@ -77,8 +192,9 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, autocl
         script.raise_event(defines.events.script_raised_destroy, event_data)
         new =
             entity.surface.create_entity {
-            name = entity.prototype.mineable_properties.products[1].name .. clamped_name[table_entry],
+            name = entity.prototype.mineable_properties.products[1].name .. map_clamped_name[clamped_name[table_entry]].name,
             position = entity_position,
+            direction = map_clamped_name[clamped_name[table_entry]].direction,
             force = entity.force,
             fast_replace = true,
             spill = false
