@@ -148,7 +148,7 @@ local function show_underground_sprites(event)
         local entity_type = entity.type
         local entity_name = entity.name
         if draw_dashes_types[entity_type] or draw_dashes_names[entity_name] 
-        and not string.find(neighbour_data[4], '%-clamped%-') then
+        and not string.find(entity_name, '%-clamped%-') then
             read_entity_data[entity_unit_number] = {
                 entity_position,
                 entity_neighbours,
