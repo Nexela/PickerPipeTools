@@ -12,7 +12,6 @@ defines.direction.east     == 2         4
 defines.direction.south     == 4        16
 defines.direction.west     == 6         64
 ]]
-
 local map_clamped_name = {
     --[0] = "-clamped-none",
     ['-clamped-N'] = {
@@ -115,42 +114,41 @@ local clamped_name_match = {
     [85] = '%-clamped%-NSEW$'
 }
 
-local function migrate_clamped_pipes()
-    local counter = 0
-    for _,surface in pairs(game.surfaces) do
-        for _,pipe in pairs(surface.find_entities_filtered({type = 'pipe'})) do
-            --local migrated = false
-            if string.find(pipe.name, "%-clamped%-") then
-                for table_entry,old_name in pairs(clamped_name) do
-                    local is_match = string.find(pipe.name, clamped_name_match[table_entry])
-                    if is_match then
-                        pipe.surface.create_entity {
-                            name = pipe.prototype.mineable_properties.products[1].name .. map_clamped_name[clamped_name[table_entry]].name,
-                            position = pipe.position,
-                            direction = map_clamped_name[clamped_name[table_entry]].direction,
-                            force = pipe.force,
-                            fast_replace = true,
-                            spill = false
-                        }
-                        counter = counter + 1
-                        --migrated = true
-                        break
+local function migrate_clamped_pipes(event)
+    if event.mod_changes and event.mod_changes['PickerPipeTools'] and event.mod_changes['PickerPipeTools'].new_version == '0.1.3' then
+        local counter = 0
+        for _, surface in pairs(game.surfaces) do
+            for _, pipe in pairs(surface.find_entities_filtered({type = 'pipe'})) do
+                if string.find(pipe.name, '%-clamped%-') then
+                    for table_entry in pairs(clamped_name) do
+                        local is_match = string.find(pipe.name, clamped_name_match[table_entry])
+                        if is_match then
+                            pipe.surface.create_entity {
+                                name = pipe.prototype.mineable_properties.products[1].name .. map_clamped_name[clamped_name[table_entry]].name,
+                                position = pipe.position,
+                                direction = map_clamped_name[clamped_name[table_entry]].direction,
+                                force = pipe.force,
+                                fast_replace = true,
+                                spill = false
+                            }
+                            counter = counter + 1
+                            break
+                        end
                     end
                 end
             end
         end
+        game.print(counter .. ' clamps migrated to new pipes. Old clamped pipes in the map on all layers have been removed.')
+        game.print('Blueprints will still contain the old version.')
+        game.print('Misalignment of marker sprite can be fixed with restart. Only happens after update and once.')
+        game.print('Automatic clamping can be toggled with <CTRL + SHIFT + C>')
     end
-    game.print(counter .. " clamps migrated to new pipes. Old clamped pipes in the map on all layers have been removed.")
-    game.print("Blueprints will still contain the old version.")
-    game.print("Misalignment of marker sprite can be fixed with restart. Only happens after update and once.")
-    game.print("Automatic clamping can be toggled with <CTRL + SHIFT + C>")
 end
-script.on_configuration_changed(migrate_clamped_pipes)
 
 local not_clampable_pipes = {
     ['4-to-4-pipe'] = true,
     ['factory-fluid-dummy-connector'] = true,
-    ['factory-fluid-dummy-connector-south'] = true,
+    ['factory-fluid-dummy-connector-south'] = true
 }
 local yellow = {r = 1, g = 1}
 local green = {g = 1}
@@ -458,13 +456,6 @@ local function un_clamp_pipe(entity, player, area_unclamp)
     pipe_autoclamp_clamp(event, true)
 end
 
-
-Event.register(defines.events.on_player_rotated_entity, function(event)
-    if event.entity and string.find(event.entity.name, '%-clamped%-') then
-        pipe_autoclamp_clamp(event, true)
-    end
-end)
-
 local function toggle_pipe_clamp(event)
     local player, _ = Player.get(event.player_index)
     local selection = player.selected
@@ -483,7 +474,7 @@ local function toggle_area_clamp(event)
         local clamp = event.name == defines.events.on_player_selected_area
         local player = game.players[event.player_index]
         for _, entity in pairs(event.entities) do
-            if entity.valid and entity.type == 'pipe' and not not_clampable_pipes[entity.name] then --? Verify entity still exists. Un_clamp fires pipe_autoclamp_clamp which may replace an entity in the event.entities table
+            if entity.valid and entity.type == 'pipe' and not not_clampable_pipes[entity.name] then --? Verify entity still exists. Un_clamp fires pipe-autoclamp-clamp which may replace an entity in the event.entities table
                 local clamped = string.find(entity.name, '%-clamped%-')
                 if clamp and not clamped then
                     clamp_pipe(entity, player)
@@ -501,6 +492,12 @@ local function on_built_entity(event)
         local position_to_save = event.created_entity.position --? Store position ahead of time. Entity can be invalidated (replaced) during the following function before storing it's position.
         pipe_autoclamp_clamp(event, false)
         pdata.last_pipe_position = position_to_save
+    end
+end
+
+local function on_player_rotated_entity(event)
+    if event.entity and event.entity.name:find('%-clamped%-') then
+        pipe_autoclamp_clamp(event, true)
     end
 end
 
@@ -524,8 +521,9 @@ if settings.startup['picker-tool-pipe-clamps'].value then
     Event.register('picker-toggle-pipe-clamp', toggle_pipe_clamp)
     Event.register({defines.events.on_player_selected_area, defines.events.on_player_alt_selected_area}, toggle_area_clamp)
     Event.register(defines.events.on_built_entity, on_built_entity)
-
+    Event.register(defines.events.on_player_rotated_entity, on_player_rotated_entity)
     Event.register('picker-auto-clamp-toggle', toggle_auto_clamp)
+    Event.register(Event.core_events.on_configuration_changed, migrate_clamped_pipes)
     commands.add_command('autoclamp', {'autoclamp-commands.toggle-autoclamp'}, toggle_auto_clamp)
 end
 remote.add_interface(script.mod_name, require('lib/interface'))

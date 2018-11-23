@@ -147,8 +147,7 @@ local function show_underground_sprites(event)
         local entity_neighbours = entity.neighbours[1]
         local entity_type = entity.type
         local entity_name = entity.name
-        if draw_dashes_types[entity_type] or draw_dashes_names[entity_name] 
-        and not string.find(entity_name, '%-clamped%-') then
+        if draw_dashes_types[entity_type] or draw_dashes_names[entity_name] and not string.find(entity_name, '%-clamped%-') then
             read_entity_data[entity_unit_number] = {
                 entity_position,
                 entity_neighbours,
@@ -179,9 +178,7 @@ local function show_underground_sprites(event)
             local neighbour_unit_number = neighbour.unit_number
             local neighbour_data = read_entity_data[neighbour_unit_number]
             if neighbour_data then
-                if draw_dashes_types[neighbour_data[3]] or draw_dashes_names[neighbour_data[4]] 
-                and not string.find(neighbour_data[4], '%-clamped%-')
-                and not all_entities_marked[neighbour_unit_number] then
+                if draw_dashes_types[neighbour_data[3]] or draw_dashes_names[neighbour_data[4]] and not string.find(neighbour_data[4], '%-clamped%-') and not all_entities_marked[neighbour_unit_number] then
                     local start_position = Position.translate(entity_data[1], get_direction(entity_data[1], neighbour_data[1]), 0.5)
                     local end_position = Position.translate(neighbour_data[1], get_direction(neighbour_data[1], entity_data[1]), 0.5)
                     markers_made = markers_made + 1
@@ -409,10 +406,8 @@ local function highlight_pipeline(starter_entity, player_index)
             local current_neighbour = read_entity_data[neighbour_unit_number]
             if current_neighbour then
                 --? If it's a pump or certain other entities, draw dashes between it and the neighbour if that neighbour is also a pump or other certain entities.
-                if (draw_dashes_types[entity[3]] or draw_dashes_names[entity[4]]) 
-                and not string.find(entity[4], '%-clamped%-') then
-                    if (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) 
-                    and not string.find(current_neighbour[4], '%-clamped%-') then
+                if (draw_dashes_types[entity[3]] or draw_dashes_names[entity[4]]) and not string.find(entity[4], '%-clamped%-') then
+                    if (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) and not string.find(current_neighbour[4], '%-clamped%-') then
                         draw_dashes(entity[1], current_neighbour[1], 'bad')
                     --TODO 0.17 draw_dashes(current_neighbour[1], entity[1], 'bad')
                     end
@@ -443,10 +438,8 @@ local function highlight_pipeline(starter_entity, player_index)
             for _, neighbour_unit_number in pairs(current_orphan[2]) do
                 local current_neighbour = read_entity_data[neighbour_unit_number]
                 if current_neighbour then
-                    if (draw_dashes_types[current_orphan[3]] or draw_dashes_names[current_orphan[4]])
-                    and not string.find(current_orphan[4], '%-clamped%-') then
-                        if (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]])
-                        and not string.find(current_neighbour[4], '%-clamped%-') then
+                    if (draw_dashes_types[current_orphan[3]] or draw_dashes_names[current_orphan[4]]) and not string.find(current_orphan[4], '%-clamped%-') then
+                        if (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) and not string.find(current_neighbour[4], '%-clamped%-') then
                             draw_dashes(current_orphan[1], current_neighbour[1], 'bad')
                         --TODO 0.17 draw_dashes(current_neighbour[1], current_orphan[1], 'bad')
                         end
@@ -463,9 +456,7 @@ local function highlight_pipeline(starter_entity, player_index)
                     for _, neighbour_unit_number in pairs(current_entity[2]) do
                         local current_neighbour = read_entity_data[neighbour_unit_number]
                         if current_neighbour then
-                            if (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) 
-                            and not string.find(current_neighbour[4], '%-clamped%-')
-                            and not all_entities_marked[neighbour_unit_number] then
+                            if (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) and not string.find(current_neighbour[4], '%-clamped%-') and not all_entities_marked[neighbour_unit_number] then
                                 draw_dashes(current_entity[1], current_neighbour[1], 'normal')
                             end
                         end
@@ -486,9 +477,7 @@ local function highlight_pipeline(starter_entity, player_index)
                     for _, neighbour_unit_number in pairs(current_entity[2]) do
                         local current_neighbour = read_entity_data[neighbour_unit_number]
                         if current_neighbour then
-                            if not all_entities_marked[neighbour_unit_number]
-                            and not string.find(current_neighbour[4], '%-clamped%-')
-                            and (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) then
+                            if not all_entities_marked[neighbour_unit_number] and not string.find(current_neighbour[4], '%-clamped%-') and (draw_dashes_types[current_neighbour[3]] or draw_dashes_names[current_neighbour[4]]) then
                                 draw_dashes(current_entity[1], current_neighbour[1], 'good')
                             end
                         end
@@ -535,12 +524,11 @@ end
 Event.register(defines.events.on_selected_entity_changed, get_pipeline)
 
 local function highlight_update_rotated(event)
-    local player, pdata = Player.get(event.player_index)
-    pdata.current_pipeline_table = pdata.current_pipeline_table or {}
-    pdata.current_marker_table = pdata.current_marker_table or {}
-
     local entity = event.entity
     if entity and string.find(entity.name, '%-clamped%-') then
+        local _, pdata = Player.get(event.player_index)
+        pdata.current_pipeline_table = pdata.current_pipeline_table or {}
+        pdata.current_marker_table = pdata.current_marker_table or {}
         if next(pdata.current_pipeline_table) then
             destroy_markers(pdata.current_marker_table)
             pdata.current_pipeline_table = nil

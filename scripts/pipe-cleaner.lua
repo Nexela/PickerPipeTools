@@ -5,6 +5,8 @@
 local Event = require('lib/event')
 local table = require('lib/table')
 
+-- TODO: Revert back to keybind?
+
 --Start at a drain and clear fluidboxes out that match. find drain connections not cleaned and repeat
 local function call_a_plumber(event)
     if event.item == 'picker-pipe-cleaner' then
