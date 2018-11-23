@@ -516,14 +516,14 @@ local function get_pipeline(event)
     local selection = player.selected
     -- TODO Faster check if table method possibly
     if selection and allowed_types[selection.type] then
-            if not pdata.current_pipeline_table[selection.unit_number] then
-                if next(pdata.current_pipeline_table) then
-                    destroy_markers(pdata.current_marker_table)
-                    pdata.current_pipeline_table = nil
-                    pdata.current_marker_table = nil
-                end
-                highlight_pipeline(selection, event.player_index)
+        if not pdata.current_pipeline_table[selection.unit_number] then
+            if next(pdata.current_pipeline_table) then
+                destroy_markers(pdata.current_marker_table)
+                pdata.current_pipeline_table = nil
+                pdata.current_marker_table = nil
             end
+            highlight_pipeline(selection, event.player_index)
+        end
     else
         if next(pdata.current_pipeline_table) then
             destroy_markers(pdata.current_marker_table)
@@ -533,6 +533,22 @@ local function get_pipeline(event)
     end
 end
 Event.register(defines.events.on_selected_entity_changed, get_pipeline)
+
+Event.register(defines.events.on_player_rotated_entity, function(event)
+    local player, pdata = Player.get(event.player_index)
+    pdata.current_pipeline_table = pdata.current_pipeline_table or {}
+    pdata.current_marker_table = pdata.current_marker_table or {}
+
+    local entity = event.entity
+    if entity and string.find(entity.name, '%-clamped%-') then
+        if next(pdata.current_pipeline_table) then
+            destroy_markers(pdata.current_marker_table)
+            pdata.current_pipeline_table = nil
+            pdata.current_marker_table = nil
+        end
+        highlight_pipeline(entity, event.player_index)
+    end
+end)
 
 local function clear_markers(event)
     local player, _ = Player.get(event.player_index)
