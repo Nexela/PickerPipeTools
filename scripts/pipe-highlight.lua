@@ -501,23 +501,24 @@ local function get_pipeline(event)
     local player, pdata = Player.get(event.player_index)
     pdata.current_pipeline_table = pdata.current_pipeline_table or {}
     pdata.current_marker_table = pdata.current_marker_table or {}
-
-    local selection = player.selected
-    -- TODO Faster check if table method possibly
-    if selection and allowed_types[selection.type] then
-        if not pdata.current_pipeline_table[selection.unit_number] then
+    if not pdata.disable_auto_highlight then
+        local selection = player.selected
+        -- TODO Faster check if table method possibly
+        if selection and allowed_types[selection.type] then
+            if not pdata.current_pipeline_table[selection.unit_number] then
+                if next(pdata.current_pipeline_table) then
+                    destroy_markers(pdata.current_marker_table)
+                    pdata.current_pipeline_table = nil
+                    pdata.current_marker_table = nil
+                end
+                highlight_pipeline(selection, event.player_index)
+            end
+        else
             if next(pdata.current_pipeline_table) then
                 destroy_markers(pdata.current_marker_table)
                 pdata.current_pipeline_table = nil
-                pdata.current_marker_table = nil
+                pdata.all_markers = nil
             end
-            highlight_pipeline(selection, event.player_index)
-        end
-    else
-        if next(pdata.current_pipeline_table) then
-            destroy_markers(pdata.current_marker_table)
-            pdata.current_pipeline_table = nil
-            pdata.all_markers = nil
         end
     end
 end
@@ -533,8 +534,8 @@ local function highlight_update_rotated(event)
             destroy_markers(pdata.current_marker_table)
             pdata.current_pipeline_table = nil
             pdata.current_marker_table = nil
+            highlight_pipeline(entity, event.player_index)
         end
-        highlight_pipeline(entity, event.player_index)
     end
 end
 Event.register(defines.events.on_player_rotated_entity, highlight_update_rotated)
@@ -552,3 +553,29 @@ local function clear_markers(event)
     end
 end
 commands.add_command('clear-all-markers', {'highlight-commands.clear-markers'}, clear_markers)
+
+local truthy = {['on'] = true, ['true'] = true}
+local falsey = {['off'] = true, ['false'] = true}
+
+local function toggle_auto_highlight(event)
+    local player, pdata = Player.get(event.player_index)
+    if truthy[event.parameter] then
+        pdata.disable_auto_highlight = false
+    elseif falsey[event.parameter] then
+        pdata.disable_auto_highlight = true
+    else
+        pdata.disable_auto_highlight = not pdata.disable_auto_highlight
+    end
+    if pdata.disable_auto_highlight then
+        if pdata.current_pipeline_table and next(pdata.current_pipeline_table) then
+            destroy_markers(pdata.current_marker_table)
+            pdata.current_pipeline_table = nil
+            pdata.current_marker_table = nil
+        end
+    else
+        get_pipeline(event)
+    end
+    player.print({'pipe-tools.auto-highlight', pdata.disable_auto_highlight and {'pipe-tools.off'} or {'pipe-tools.on'}})
+    return pdata.disable_auto_highlight
+end
+Event.register('picker-auto-highlight-toggle', toggle_auto_highlight)
