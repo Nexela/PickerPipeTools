@@ -117,7 +117,8 @@ local clamped_name_match = {
 }
 
 local function migrate_clamped_pipes(event)
-    if event.mod_changes and event.mod_changes['PickerPipeTools'] and event.mod_changes['PickerPipeTools'].new_version == '0.1.3' then
+    local changes = event.mod_changes and event.mod_changes['PickerPipeTools']
+    if changes and changes.new_version == '0.1.3' and changes.old_version then
         local counter = 0
         for _, surface in pairs(game.surfaces) do
             for _, pipe in pairs(surface.find_entities_filtered({type = 'pipe'})) do
@@ -472,7 +473,7 @@ local function toggle_pipe_clamp(event)
             local name, type = entity.name, entity.type
             local same_force = entity.force == pforce
             if clamp and entity.type == 'pipe' and same_force and not not_clampable_pipes[name] then
-                clamp_pipe(entity, player, selected and selected.type == 'pipe')
+                clamp_pipe(entity, player, not area_clamp and clamp)
             elseif not clamp and type == 'pipe-to-ground' and same_force and name:find('%-clamped%-') then
                 un_clamp_pipe(entity, player, area_clamp)
             end
