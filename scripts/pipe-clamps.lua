@@ -338,7 +338,7 @@ local function pipe_autoclamp_clamp(event, unclamp)
 
     for _, entities in pairs(entity.neighbours) do
         for _, neighbour in pairs(entities) do
-            if neighbour.type == 'pipe' then
+            if neighbour.type == 'pipe' or (neighbour.type == 'pipe-to-ground' and string.find(neighbour.name, '%-clamped%-')) then
                 local neighbour_fluid = get_pipe_info(neighbour).fluid_name
                 if current_fluid then
                     --! Ensure fluids don't mix
@@ -459,7 +459,7 @@ end
 local function toggle_pipe_clamp(event)
     local player, _ = Player.get(event.player_index)
     local selection = player.selected
-    if selection and selection.type == 'pipe' and selection.force == player.force and not not_clampable_pipes[selection.name] then
+    if selection and (selection.type == 'pipe' or selection.type == 'pipe-to-ground') and selection.force == player.force and not not_clampable_pipes[selection.name] then
         local clamped = string.find(selection.name, '%-clamped%-')
         if not clamped then
             clamp_pipe(selection, player, true)
@@ -474,7 +474,7 @@ local function toggle_area_clamp(event)
         local clamp = event.name == defines.events.on_player_selected_area
         local player = game.players[event.player_index]
         for _, entity in pairs(event.entities) do
-            if entity.valid and entity.type == 'pipe-to-ground' and not not_clampable_pipes[entity.name] then --? Verify entity still exists. Un_clamp fires pipe-autoclamp-clamp which may replace an entity in the event.entities table
+            if entity.valid and (selection.type == 'pipe' or selection.type == 'pipe-to-ground') and not not_clampable_pipes[entity.name] then --? Verify entity still exists. Un_clamp fires pipe-autoclamp-clamp which may replace an entity in the event.entities table
                 local clamped = string.find(entity.name, '%-clamped%-')
                 if clamp and not clamped then
                     clamp_pipe(entity, player)
