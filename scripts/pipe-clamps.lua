@@ -474,7 +474,7 @@ local function toggle_area_clamp(event)
         local clamp = event.name == defines.events.on_player_selected_area
         local player = game.players[event.player_index]
         for _, entity in pairs(event.entities) do
-            if entity.valid and entity.type == 'pipe' and not not_clampable_pipes[entity.name] then --? Verify entity still exists. Un_clamp fires pipe-autoclamp-clamp which may replace an entity in the event.entities table
+            if entity.valid and entity.type == 'pipe-to-ground' and not not_clampable_pipes[entity.name] then --? Verify entity still exists. Un_clamp fires pipe-autoclamp-clamp which may replace an entity in the event.entities table
                 local clamped = string.find(entity.name, '%-clamped%-')
                 if clamp and not clamped then
                     clamp_pipe(entity, player)
