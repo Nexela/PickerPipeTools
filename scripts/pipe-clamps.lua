@@ -328,7 +328,7 @@ local function check_sub_neighbours(sub_neighbours, neighbour, entity)
 end
 
 local function pipe_autoclamp_clamp(event, unclamp)
-    local entity = event.created_entity
+    local entity = event.created_entity or event.entity
     local player, pdata = Player.get(event.player_index)
 
     local pipes_to_clamp = {}
@@ -457,6 +457,13 @@ local function un_clamp_pipe(entity, player, area_unclamp)
     end
     pipe_autoclamp_clamp(event, true)
 end
+
+
+Event.register(defines.events.on_player_rotated_entity, function(event)
+    if event.entity and string.find(event.entity.name, '%-clamped%-') then
+        pipe_autoclamp_clamp(event, true)
+    end
+end)
 
 local function toggle_pipe_clamp(event)
     local player, _ = Player.get(event.player_index)
