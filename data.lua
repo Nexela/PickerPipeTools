@@ -8,8 +8,8 @@ data:extend{
     {
         type = "custom-input",
         name = "picker-toggle-pipe-clamp",
-        key_sequence = "CONTROL + SHIFT + ALT + PAD 0",
-        linked_game_control = 'rotate',
+        key_sequence = "CONTROL + R",
+        --linked_game_control = 'rotate',
         consuming = "script-only"
     },
     {

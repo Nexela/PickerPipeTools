@@ -140,7 +140,9 @@ local function migrate_clamped_pipes()
             end
         end
     end
-    game.print(counter .. " clamps migrated to new pipes. Old clamped pipes have been removed. (Blueprints with them will still contain them.)")
+    game.print(counter .. " clamps migrated to new pipes. Old clamped pipes in the map on all layers have been removed.")
+    game.print("Blueprints will still contain the old version.")
+    game.print("Automatic clamping can be toggled with CTRL + SHFT + C")
 end
 script.on_configuration_changed(migrate_clamped_pipes)
 
