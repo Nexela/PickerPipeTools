@@ -142,7 +142,7 @@ local function migrate_clamped_pipes()
     end
     game.print(counter .. " clamps migrated to new pipes. Old clamped pipes in the map on all layers have been removed.")
     game.print("Blueprints will still contain the old version.")
-    game.print("Automatic clamping can be toggled with CTRL + SHFT + C")
+    game.print("Misalignment of marker sprite can be fixed with restart. Only happens after update and once.")
 end
 script.on_configuration_changed(migrate_clamped_pipes)
 
