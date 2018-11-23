@@ -183,7 +183,7 @@ end
 
 --((
 -- Clamping and Unclamping need to check for for a filter and add it to the replaced pipe
-local function place_clamped_pipe(entity, table_entry, player, lock_pipe, autoclamp)
+local function place_clamped_pipe(entity, table_entry, player, lock_pipe, autoclamp, area_clamp)
     --local player, pdata = Player.get(player.index)
     local entity_position = entity.position
     local new
@@ -203,7 +203,7 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, autocl
             fast_replace = true,
             spill = false
         }
-        if not autoclamp then
+        if not autoclamp and not area_clamp then
             new.surface.create_entity {
                 name = 'flying-text',
                 position = entity_position,
@@ -258,7 +258,7 @@ local function get_direction(entity, neighbour)
     return table_entry
 end
 
-local function clamp_pipe(entity, player, lock_pipe, autoclamp, reverse_entity)
+local function clamp_pipe(entity, player, lock_pipe, autoclamp, reverse_entity, area_clamp)
     local table_entry = 0
     local neighbour_count = 0
     for _, entities in pairs(entity.neighbours) do
@@ -285,7 +285,7 @@ local function clamp_pipe(entity, player, lock_pipe, autoclamp, reverse_entity)
         if reverse_entity then
             table_entry = table_entry - get_direction(entity, reverse_entity)
         end
-        place_clamped_pipe(entity, table_entry, player, lock_pipe, autoclamp)
+        place_clamped_pipe(entity, table_entry, player, lock_pipe, autoclamp, area_clamp)
     end
 end
 
@@ -473,7 +473,7 @@ local function toggle_pipe_clamp(event)
             local name, type = entity.name, entity.type
             local same_force = entity.force == pforce
             if clamp and entity.type == 'pipe' and same_force and not not_clampable_pipes[name] then
-                clamp_pipe(entity, player, not area_clamp and clamp)
+                clamp_pipe(entity, player, not area_clamp and clamp, false, false, area_clamp)
             elseif not clamp and type == 'pipe-to-ground' and same_force and name:find('%-clamped%-') then
                 un_clamp_pipe(entity, player, area_clamp)
             end
