@@ -7,6 +7,8 @@
 local Event = require('lib/event')
 local Player = require('lib/player')
 
+local ev = defines.events
+
 --[[defines.direction.north     == 0    1
 defines.direction.east     == 2         4
 defines.direction.south     == 4        16
@@ -457,30 +459,22 @@ local function un_clamp_pipe(entity, player, area_unclamp)
 end
 
 local function toggle_pipe_clamp(event)
-    local player, _ = Player.get(event.player_index)
-    local selection = player.selected
-    if selection and (selection.type == 'pipe' or selection.type == 'pipe-to-ground') and selection.force == player.force and not not_clampable_pipes[selection.name] then
-        local clamped = string.find(selection.name, '%-clamped%-')
-        if not clamped then
-            clamp_pipe(selection, player, true)
-        elseif clamped then
-            un_clamp_pipe(selection, player)
-        end
-    end
-end
+    local player = game.players[event.player_index]
+    local pforce = player.force
+    local selected = player.selected
+    local area_clamp = event.name == ev.on_player_selected_area or event.name == ev.on_player_alt_selected_area
+    local clamp = event.name == ev.on_player_selected_area or (not area_clamp and selected and selected.type == 'pipe')
 
-local function toggle_area_clamp(event)
-    if event.item == 'picker-pipe-clamper' then
-        local clamp = event.name == defines.events.on_player_selected_area
-        local player = game.players[event.player_index]
-        for _, entity in pairs(event.entities) do
-            if entity.valid and (selection.type == 'pipe' or selection.type == 'pipe-to-ground') and not not_clampable_pipes[entity.name] then --? Verify entity still exists. Un_clamp fires pipe-autoclamp-clamp which may replace an entity in the event.entities table
-                local clamped = string.find(entity.name, '%-clamped%-')
-                if clamp and not clamped then
-                    clamp_pipe(entity, player)
-                elseif not clamp and clamped then
-                    un_clamp_pipe(entity, player, true)
-                end
+    local entities = event.entities or {selected}
+
+    for _, entity in pairs(entities) do
+        if entity.valid then
+            local name, type = entity.name, entity.type
+            local same_force = entity.force == pforce
+            if clamp and entity.type == 'pipe' and same_force and not not_clampable_pipes[name] then
+                clamp_pipe(entity, player, selected and selected.type == 'pipe')
+            elseif not clamp and type == 'pipe-to-ground' and same_force and name:find('%-clamped%-') then
+                un_clamp_pipe(entity, player, area_clamp)
             end
         end
     end
@@ -519,7 +513,7 @@ end
 
 if settings.startup['picker-tool-pipe-clamps'].value then
     Event.register('picker-toggle-pipe-clamp', toggle_pipe_clamp)
-    Event.register({defines.events.on_player_selected_area, defines.events.on_player_alt_selected_area}, toggle_area_clamp)
+    Event.register({defines.events.on_player_selected_area, defines.events.on_player_alt_selected_area}, toggle_pipe_clamp)
     Event.register(defines.events.on_built_entity, on_built_entity)
     Event.register(defines.events.on_player_rotated_entity, on_player_rotated_entity)
     Event.register('picker-auto-clamp-toggle', toggle_auto_clamp)
