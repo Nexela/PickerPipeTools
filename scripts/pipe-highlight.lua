@@ -534,7 +534,7 @@ local function get_pipeline(event)
 end
 Event.register(defines.events.on_selected_entity_changed, get_pipeline)
 
-Event.register(defines.events.on_player_rotated_entity, function(event)
+local function highlight_update_rotated(event)
     local player, pdata = Player.get(event.player_index)
     pdata.current_pipeline_table = pdata.current_pipeline_table or {}
     pdata.current_marker_table = pdata.current_marker_table or {}
@@ -548,7 +548,8 @@ Event.register(defines.events.on_player_rotated_entity, function(event)
         end
         highlight_pipeline(entity, event.player_index)
     end
-end)
+end
+Event.register(defines.events.on_player_rotated_entity, highlight_update_rotated)
 
 local function clear_markers(event)
     local player, _ = Player.get(event.player_index)
