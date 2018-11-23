@@ -45,11 +45,5 @@ data:extend{
         default_value = false,
         order = 'picker-b[find-orphans]-a'
     },
-    {
-        type = 'bool-setting',
-        name = 'picker-count-orphans-found',
-        setting_type = 'runtime-per-user',
-        default_value = false,
-        order = 'picker-b[find-orphans]-a'
-    },
+
 }

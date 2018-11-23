@@ -421,9 +421,6 @@ local function highlight_pipeline(starter_entity, player_index)
     end
 
     if orphan_counter > 0 then
-        if player.mod_settings['picker-count-orphans-found'].value then
-            player.print(orphan_counter .. ' dead end pipes found.')
-        end
         for unit_number, _ in pairs(tracked_orphans) do
             local current_orphan = read_entity_data[unit_number]
             if current_orphan[3] == 'pump' and not draw_dashes_names[current_orphan[4]] then
