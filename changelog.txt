@@ -6,7 +6,9 @@ Date: 22. 11. 2018
     - Migration script to alter all clamped pipes in world to new version (Covers all layers)
     - Removed orphaned pipe counter. It's useless and the colors denote orphans.
     - Orphan finder default to off. Doesn't provide much functionality with current feature set.
-    - New clamp methods require new hotkey. New hotkey for clamping <CTRL + R>
+    - New clamp methods require new hotkey. New hotkey for clamping <CTRL + R>.
+    - Pipe highlighter can be toggled on and off with <CTRL SHIFT H>
+    - Pipe clamps properly rotate in blueprints and can even be mirrored by picker extended blueprint mirror feature properly.
   Fixes:
     - AAI Industries Offshore pump causing graphical glitches with highlighter.
     - Fix markers being drawn improperly on "Advanced Fluid Handling" 4-to-4 pipe
