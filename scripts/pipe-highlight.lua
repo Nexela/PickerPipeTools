@@ -32,8 +32,8 @@ local function show_underground_sprites(event)
                     for i = 1, distancex - 1, 1 do
                         entity.surface.create_entity {
                             name = 'picker-highlight-box',
-                            position = entity.position, -- pos:copy():offset(i, 0)
-                            bounding_box = pos:copy():offset(i, 0):expand_to_area(.5),
+                            position = entity.position, -- pos:offset(i, 0)
+                            bounding_box = pos:offset(i, 0):expand_to_area(.5),
                             render_player_index = player.index,
                             box_type = 'train-visualization',
                             time_to_live = 60 * 10,
@@ -45,8 +45,8 @@ local function show_underground_sprites(event)
                     for i = 1, distancey - 1, 1 do
                         entity.surface.create_entity {
                             name = 'picker-highlight-box',
-                            position = entity.position, -- pos:copy():offset(i, 0)
-                            bounding_box = pos:copy():offset(0, i):expand_to_area(.5),
+                            position = entity.position, -- pos:offset(i, 0)
+                            bounding_box = pos:offset(0, i):expand_to_area(.5),
                             render_player_index = player.index,
                             box_type = 'train-visualization',
                             time_to_live = 60 * 10,
