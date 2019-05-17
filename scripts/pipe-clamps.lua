@@ -177,6 +177,7 @@ local function clamp_pipe(entity, player, lock_pipe, autoclamp, reverse_entity, 
             end
         end
     end
+<<<<<<< HEAD
     if neighbour_count > 0 then
         if reverse_entity then
             table_entry = table_entry - get_direction(entity, reverse_entity)
@@ -217,6 +218,25 @@ local function check_sub_neighbours(sub_neighbours, neighbour, entity)
         game.print(fluid_box_counter)
         if fluid_box_counter > 1 then
             return neighbour
+=======
+    local pos = entity.position
+    if neighbour_count > 1 and table_entry < 15 then
+        entity.surface.create_entity {
+                name = entity.name .. clamped_name[table_entry],
+                position = pos,
+                force = entity.force,
+                fast_replace = true, -- TODO filters are not fast replaced
+                player = player.index,
+                spill = false
+            }.last_user = player
+        player.create_local_flying_text {
+            position = pos,
+            text = {'pipe-tools.clamped'},
+            color = green
+        }
+        if entity then
+            entity.destroy()
+>>>>>>> 5cf9a65ae0f03e759ec114aabcf0a242d3e85ff2
         end
     end
 end
