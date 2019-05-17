@@ -179,6 +179,7 @@ if settings.startup['picker-tool-pipe-clamps'].value then
                 current_entity.type = 'pipe-to-ground'
                 current_entity.name = pipe.name .. '-clamped-' .. names
                 current_entity.clamped = true
+                current_entity.fast_replaceable_group = "pipe-to-ground"
                 current_entity.localised_name = {'pipe-tools.clamped-name', pipe.name, pipe_data.locale}
                 current_entity.placeable_by = {item = pipe.minable and pipe.minable.result or pipe.name, count = pipe.minable and pipe.minable.count or 1}
                 current_entity.underground_sprite = util.table.deepcopy(data.raw['pipe-to-ground']['pipe-to-ground'].underground_sprite)

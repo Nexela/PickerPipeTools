@@ -24,4 +24,9 @@ data:extend{
         key_sequence = "CONTROL + SHIFT + H",
         consuming = "script-only"
     },
+    {
+        type = 'custom-input',
+        name = 'picker-pipe-filter',
+        key_sequence = 'CONTROL + F'
+    }
 }
