@@ -11,9 +11,9 @@ local pipe_types = {
 }
 
 local function get_pipe(stream)
-    local _, x, y, surf = stream:match('^(%d+)_([%-%.0-9]+)_([%-%.0-9]+)_(%d+)')
+    local _, x, y, surface_index = stream:match('^(%d+)_([%-%.0-9]+)_([%-%.0-9]+)_(%d+)')
     local pos = {x = x, y = y}
-    for i, ent in pairs(game.surfaces[surf].find_entities_filtered {position = pos}) do
+    for i, ent in pairs(game.surfaces[tonumber(surface_index)].find_entities_filtered {position = pos}) do
         if pipe_types[ent.type] then
             return ent
         end
@@ -25,7 +25,7 @@ local function pipe_filter(event)
     local frame = player.gui.center[FRAME]
 
     if frame then
-        frame.destroy()
+        return frame.destroy()
     end
 
     local pipe = player.selected
@@ -42,8 +42,7 @@ local function pipe_filter(event)
             name = 'boxes',
             column_count = #pipe.fluidbox
         }
-        local caption =
-            pipe.unit_number .. '_' .. pipe.position.x .. '_' .. pipe.position.y .. '_' .. pipe.surface.index
+        local caption = pipe.unit_number .. '_' .. pipe.position.x .. '_' .. pipe.position.y .. '_' .. pipe.surface.index
         for i = 1, #pipe.fluidbox do
             local filter = pipe.fluidbox.get_filter(i)
             filter = filter and filter.name or nil
@@ -79,10 +78,13 @@ Event.register(defines.events.on_gui_closed, close_gui)
 local function change_filter(event)
     local pipe = get_pipe(event.element.caption)
     if pipe then
-        local filter = {
-            name = event.element.elem_value,
-            force = true
-        }
+        local filter
+        if event.element.elem_value then
+            filter = {
+                name = event.element.elem_value,
+                force = true
+            }
+        end
         pipe.fluidbox.set_filter(tonumber(event.element.parent.caption), filter)
     end
 end
