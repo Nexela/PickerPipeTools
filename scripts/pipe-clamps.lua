@@ -6,7 +6,9 @@
 
 local Event = require('__stdlib__/stdlib/event/event')
 local Player = require('__stdlib__/stdlib/event/player')
+local Position = require('__stdlib__/stdlib/area/position')
 local utils = require('scripts/utils')
+local abs = math.abs
 
 --[[
     defines.direction.north     == 0    1
@@ -133,73 +135,43 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, autocl
     return new
 end
 
-local function get_direction(entity, neighbour)
-    local table_entry = 0
-    if not entity.valid or not neighbour.valid then
-        return
-    end
-    local deltaX = entity.position.x - neighbour.position.x
-    local deltaY = entity.position.y - neighbour.position.y
-    if deltaX ~= 0 and deltaY == 0 then
-        table_entry = table_entry + 2 ^ (utils.get_ew(deltaX))
-    elseif deltaX == 0 and deltaY ~= 0 then
-        table_entry = table_entry + 2 ^ (utils.get_ns(deltaY))
-    elseif deltaX ~= 0 and deltaY ~= 0 then
-        if math.abs(deltaX) > math.abs(deltaY) then
-            table_entry = table_entry + 2 ^ (utils.get_ew(deltaX))
-        elseif math.abs(deltaX) < math.abs(deltaY) then
-            table_entry = table_entry + 2 ^ (utils.get_ns(deltaY))
-        end
-    end
-    return table_entry
-end
 
 local function clamp_pipe(entity, player, lock_pipe, autoclamp, reverse_entity, area_clamp)
     local table_entry = 0
     local neighbour_count = 0
+    local entity_position = entity.position
     for _, entities in pairs(entity.neighbours) do
         for _, neighbour in pairs(entities) do
-            local deltaX = entity.position.x - neighbour.position.x
-            local deltaY = entity.position.y - neighbour.position.y
-            if deltaX ~= 0 and deltaY == 0 then
-                table_entry = table_entry + 2 ^ (utils.get_ew(deltaX))
-                neighbour_count = neighbour_count + 1
-            elseif deltaX == 0 and deltaY ~= 0 then
-                table_entry = table_entry + 2 ^ (utils.get_ns(deltaY))
-                neighbour_count = neighbour_count + 1
-            elseif deltaX ~= 0 and deltaY ~= 0 then
-                if math.abs(deltaX) > math.abs(deltaY) then
-                    table_entry = table_entry + 2 ^ (utils.get_ew(deltaX))
-                elseif math.abs(deltaX) < math.abs(deltaY) then
-                    table_entry = table_entry + 2 ^ (utils.get_ns(deltaY))
+            local neighbour_position = neighbour.position
+            local delta_x = entity_position.x - neighbour_position.x
+            local delta_y = entity_position.y - neighbour_position.y
+            if delta_x ~= 0 then
+                if delta_y == 0 then
+                    table_entry = table_entry + 2 ^ (utils.get_ew(delta_x))
+                    neighbour_count = neighbour_count + 1
+                else
+                    local adx,ady = abs(delta_x), abs(delta_y)
+                    if adx > ady then
+                        table_entry = table_entry + 2 ^ (utils.get_ew(delta_x))
+                    else
+                        table_entry = table_entry + 2 ^ (utils.get_ns(delta_y))
+                    end
+                    neighbour_count = neighbour_count + 1
                 end
+            else
+                table_entry = table_entry + 2 ^ (utils.get_ns(delta_y))
                 neighbour_count = neighbour_count + 1
             end
         end
     end
+    game.print(neighbour_count)
     if neighbour_count > 0 then
         if reverse_entity then
-            table_entry = table_entry - get_direction(entity, reverse_entity)
+            table_entry = table_entry - 2 ^ (Position.direction_to(entity_position, reverse_entity.position))
         end
         place_clamped_pipe(entity, table_entry, player, lock_pipe, autoclamp, area_clamp)
     end
 end
-
-local function get_distance(entity, neighbour)
-    if not neighbour then
-        return 0
-    end
-    local deltaX = math.abs(entity.position.x - neighbour.position.x)
-    local deltaY = math.abs(entity.position.y - neighbour.position.y)
-    if deltaX ~= 0 and deltaY == 0 then
-        return deltaX
-    elseif deltaX == 0 and deltaY ~= 0 then
-        return deltaY
-    elseif deltaX ~= 0 and deltaY ~= 0 then
-        return math.sqrt(((deltaX ^ 2) + (deltaY ^ 2)))
-    end
-end
---))
 
 local function check_sub_neighbours(sub_neighbours, neighbour, entity)
     local fluid_box_counter = 0
@@ -207,7 +179,6 @@ local function check_sub_neighbours(sub_neighbours, neighbour, entity)
         for _, subsequent_neighbour in pairs(subsequent_entities) do
             if subsequent_neighbour ~= entity then
                 fluid_box_counter = fluid_box_counter + 1
-            else
             end
         end
         if fluid_box_counter > 1 then
@@ -258,7 +229,7 @@ local function pipe_autoclamp_clamp(event, unclamp)
                 elseif not unclamp and not pdata.disable_auto_clamp then
                     --? If the current pipe doesn't have a fluid, make sure the player wasn't just unclamping, and make sure auto clamp is on.
                     --! <AUTO CLAMP MODE>
-                    if last_pipe and neighbour ~= last_pipe and get_distance(entity, last_pipe) == 1 then
+                    if last_pipe and neighbour ~= last_pipe and Position.distance(entity.position, last_pipe.position) == 1 then
                         --? This will see if last pipe exists, make sure that the neighbour isn't the last pipe, and if it isn't, see if it's within a tile (Tracking last pipes fluid)
                         if last_pipe_data.fluid_name and neighbour_fluid and (last_pipe_data.fluid_name ~= neighbour_fluid) then
                             --? Within, if the last pipe has a fluid name see if the neighbour has a fluid. If so, do they match? If not clamp that neighbour. Allows parallel pipe laying of dissimilar fluids.
@@ -275,7 +246,7 @@ local function pipe_autoclamp_clamp(event, unclamp)
                             --? Clamp the neighbour if it's part of an existing pipeline
                             pipes_to_clamp[#pipes_to_clamp + 1] = check_sub_neighbours(neighbour.neighbours, neighbour, entity)
                         end
-                    elseif not last_pipe or (last_pipe and get_distance(entity, last_pipe) ~= 1) then --? Catches all other cases
+                    elseif not last_pipe or (last_pipe and Position.distance(entity.position, last_pipe.position) ~= 1) then --? Catches all other cases
                         pipes_to_clamp[#pipes_to_clamp + 1] = check_sub_neighbours(neighbour.neighbours, neighbour, entity)
                     end
                 end
@@ -295,7 +266,7 @@ local function pipe_autoclamp_clamp(event, unclamp)
                         }
                         clamp_self = neighbour
                     end
-                elseif last_pipe and neighbour ~= last_pipe and get_distance(entity, last_pipe) == 1 then
+                elseif last_pipe and neighbour ~= last_pipe and Position.distance(entity.position, last_pipe.position) == 1 then
                     if last_pipe_data.fluid_name and neighbour_fluid and (last_pipe_data.fluid_name ~= neighbour_fluid) then
                         --? Last tracked fluid
                         entity.surface.create_entity {
