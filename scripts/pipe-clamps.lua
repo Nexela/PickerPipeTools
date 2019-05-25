@@ -164,7 +164,6 @@ local function clamp_pipe(entity, player, lock_pipe, autoclamp, reverse_entity, 
             end
         end
     end
-    game.print(neighbour_count)
     if neighbour_count > 0 then
         if reverse_entity then
             table_entry = table_entry - 2 ^ (Position.direction_to(entity_position, reverse_entity.position))
