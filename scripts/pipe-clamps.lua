@@ -181,7 +181,6 @@ local function clamp_pipe(entity, player, lock_pipe, autoclamp, reverse_entity, 
         if reverse_entity then
             table_entry = table_entry - get_direction(entity, reverse_entity)
         end
-        game.print(table_entry)
         place_clamped_pipe(entity, table_entry, player, lock_pipe, autoclamp, area_clamp)
     end
 end
@@ -204,17 +203,13 @@ end
 
 local function check_sub_neighbours(sub_neighbours, neighbour, entity)
     local fluid_box_counter = 0
-    game.print("Checking sub neighbours")
     for _, subsequent_entities in pairs(sub_neighbours) do
         for _, subsequent_neighbour in pairs(subsequent_entities) do
             if subsequent_neighbour ~= entity then
-                game.print("Entity doesn't match last entity")
                 fluid_box_counter = fluid_box_counter + 1
             else
-                game.print("Entity matches last entity")
             end
         end
-        game.print(fluid_box_counter)
         if fluid_box_counter > 1 then
             return neighbour
         end
