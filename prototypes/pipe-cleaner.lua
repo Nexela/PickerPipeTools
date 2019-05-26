@@ -8,5 +8,5 @@ Data {
 Data {
     type = 'custom-input',
     name = 'picker-filter-cleaner',
-    key_sequence = 'SHIFT + CONTROL + DELETE'
+    key_sequence = 'CONTROL + SHIFT + DELETE'
 }
