@@ -211,7 +211,7 @@ if settings.startup['picker-tool-pipe-clamps'].value then
             name = 'picker-pipe-clamper',
             icon = '__PickerPipeTools__/graphics/icons/hr-lock.png',
             icon_size = 64,
-            flags = {'hidden'},
+            flags = {'hidden', 'only-in-cursor'},
             subgroup = 'tool',
             order = 'c[selection-tool]-a[pipe-cleaner]',
             stack_size = 1,
