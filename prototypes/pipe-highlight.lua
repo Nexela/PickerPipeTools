@@ -201,6 +201,11 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
             direction_count = 1
         }
     }
+    marker_beams.head_light = nil
+    marker_beams.tail_light = nil
+    marker_beams.body_light = nil
+    marker_beams.start_light = nil
+    marker_beams.ending_light = nil
     marker_beams.ending = {
         filename = '__core__/graphics/empty.png',
         line_length = 1,
