@@ -170,10 +170,11 @@ if settings.startup['picker-tool-pipe-clamps'].value then
     for i, pipe in pairs(data.raw['pipe']) do
         for names, pipe_data in pairs(pipe_make_table) do
             if
-                not pipe.clamped and --and not string.find(pipe.name, 'dummy%-')
-                    not string.find(pipe.name, '%[') and
-                    not string.find(pipe.name, 'bpproxy') and
-                    not not_clampable[pipe.name]
+                not pipe.clamped and
+                not string.find(pipe.name, 'dummy%-') and
+                not string.find(pipe.name, '%[') and
+                not string.find(pipe.name, 'bpproxy') and
+                not not_clampable[pipe.name]
              then
                 local current_entity = util.table.deepcopy(pipe)
                 current_entity.type = 'pipe-to-ground'
