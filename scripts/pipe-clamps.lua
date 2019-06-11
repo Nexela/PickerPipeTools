@@ -342,12 +342,13 @@ local function toggle_pipe_clamp(event)
     local selected = player.selected
     local clamp = event.name == defines.events.on_player_selected_area or (not tool and selected and selected.type == 'pipe')
     local entities = event.entities or {selected}
+    local player_held_type = player.cursor_stack and player.cursor_stack.valid_for_read and player.cursor_stack.prototype and player.cursor_stack.prototype.place_result and player.cursor_stack.prototype.place_result.type
 
     for _, entity in pairs(entities) do
         if entity.valid then
             local name, type = entity.name, entity.type
 
-            if entity.force == pforce then
+            if (player_held_type == 'pipe' or player_held_type == 'pipe-to-ground') and entity.force == pforce then
                 if clamp then
                     if entity.type == 'pipe' and not not_clampable_pipes[name] then
                         clamp_pipe(entity, player, not tool and clamp, false, false, tool)
