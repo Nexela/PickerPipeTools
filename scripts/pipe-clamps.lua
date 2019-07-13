@@ -6,7 +6,9 @@
 
 local Event = require('__stdlib__/stdlib/event/event')
 local Player = require('__stdlib__/stdlib/event/player')
+require('__stdlib__/stdlib/area/area')
 local Position = require('__stdlib__/stdlib/area/position')
+local not_clampable = require('utils/not-clampable')
 local utils = require('scripts/utils')
 local abs = math.abs
 
@@ -53,12 +55,6 @@ local clamped_name = {
     [81] = '-clamped-NSW',
     [84] = '-clamped-SEW',
     [85] = '-clamped-NSEW'
-}
-
-local not_clampable_pipes = {
-    ['4-to-4-pipe'] = true,
-    ['factory-fluid-dummy-connector'] = true,
-    ['factory-fluid-dummy-connector-south'] = true
 }
 
 -- can return nil or entity
@@ -350,7 +346,7 @@ local function toggle_pipe_clamp(event)
 
             if (player_held_type == 'pipe' or player_held_type == 'pipe-to-ground') and entity.force == pforce then
                 if clamp then
-                    if entity.type == 'pipe' and not not_clampable_pipes[name] then
+                    if entity.type == 'pipe' and not not_clampable(name) then
                         clamp_pipe(entity, player, not tool and clamp, false, false, tool)
                     end
                 else
@@ -364,7 +360,7 @@ local function toggle_pipe_clamp(event)
 end
 
 local function on_built_entity(event)
-    if event.created_entity and event.created_entity.type == 'pipe' and not not_clampable_pipes[event.created_entity.name] then
+    if event.created_entity and event.created_entity.type == 'pipe' and not not_clampable(event.created_entity.name) then
         local _, pdata = Player.get(event.player_index)
         --? Store position ahead of time. Entity can be invalidated (replaced) during the following function before storing it's position.
         local position_to_save = event.created_entity.position

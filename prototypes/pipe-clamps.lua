@@ -3,11 +3,7 @@ local south = {position = {0, 1}}
 local west = {position = {-1, 0}}
 local east = {position = {1, 0}}
 
-local not_clampable = {
-    ['4-to-4-pipe'] = true,
-    ['factory-fluid-dummy-connector'] = true,
-    ['factory-fluid-dummy-connector-south'] = true
-}
+local not_clampable = require('utils/not-clampable')
 
 local clamped_layer = {
     straight_vertical = {
@@ -169,17 +165,12 @@ if settings.startup['picker-tool-pipe-clamps'].value then
     local pipeEntities = {}
     for i, pipe in pairs(data.raw['pipe']) do
         for names, pipe_data in pairs(pipe_make_table) do
-            if not pipe.clamped and
-            not (not_clampable[pipe.name]
-            or pipe.name:find('dummy%-')
-            or pipe.name:find('%[')
-            or pipe.name:find('bpproxy'))
-            then
+            if not pipe.clamped and not not_clampable(pipe.name) then
                 local current_entity = util.table.deepcopy(pipe)
                 current_entity.type = 'pipe-to-ground'
                 current_entity.name = pipe.name .. '-clamped-' .. names
                 current_entity.clamped = true
-                current_entity.fast_replaceable_group = "pipe"
+                current_entity.fast_replaceable_group = 'pipe'
                 current_entity.localised_name = {'pipe-tools.clamped-name', pipe.name, pipe_data.locale}
                 current_entity.placeable_by = {item = pipe.minable and pipe.minable.result or pipe.name, count = pipe.minable and pipe.minable.count or 1}
                 current_entity.underground_sprite = util.table.deepcopy(data.raw['pipe-to-ground']['pipe-to-ground'].underground_sprite)
