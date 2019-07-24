@@ -4,7 +4,7 @@ require('__stdlib__/stdlib/event/force').register_events(true)
 
 --(( Load Scripts ))--
 require('scripts/orphans')
-require('scripts/pipe-highlight')
+require('scripts/pipe-highlight/pipe-highlight')
 require('scripts/pipe-cleaner')
 require('scripts/pipe-clamps')
 require('scripts/pipe-filter')

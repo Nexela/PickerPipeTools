@@ -22,6 +22,26 @@ local base_entity = {
     }
 }
 
+local pipe_sprite_prototypes = {}
+do
+    local i = 1
+        for x = 0, 160 - 32, 32 do
+            pipe_sprite_prototypes[i] = {
+                type = 'sprite',
+                name = 'picker-pipe-marker-' .. i,
+                width = 32,
+                height = 32,
+                x = x,
+                y = 0,
+                filename = '__PickerBeltTools__/graphics/entity/markers/belt-arrows.png'
+            }
+            i = i + 1
+        end
+end
+data:extend(pipe_sprite_prototypes)
+
+
+
 local dot_table = {
     ['picker-pipe-dot'] = 'pipe-marker-dot',
     ['picker-pipe-dot-good'] = 'pipe-marker-dot-good',
