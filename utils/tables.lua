@@ -33,7 +33,7 @@ tables.bitwise_marker_entry = {
     [0x55] = 16
 }
 
-local allowed_types = {
+tables.allowed_types = {
     ['pipe'] = true,
     ['pipe-to-ground'] = true,
     ['pump'] = true
