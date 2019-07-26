@@ -22,7 +22,7 @@ local base_entity = {
     }
 }
 
-local pipe_sprite_prototypes = {}
+--[[local pipe_sprite_prototypes = {}
 do
     local i = 1
         for x = 0, 160 - 32, 32 do
@@ -38,7 +38,7 @@ do
             i = i + 1
         end
 end
-data:extend(pipe_sprite_prototypes)
+data:extend(pipe_sprite_prototypes)]]--
 
 
 
@@ -329,6 +329,7 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
             }
         }
     end
+    marker_beams.light_animations = nil
     underground_marker_beams[#underground_marker_beams + 1] = marker_beams
 end
 
