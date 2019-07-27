@@ -1,4 +1,5 @@
 local Event = require('__stdlib__/stdlib/event/event')
+local Position = require('__stdlib__/stdlib/area/position')
 --local Position = require('__stdlib__/stdlib/area/position')
 local tables = {}
 
@@ -13,6 +14,46 @@ tables.protected = {
 }
 tables.empty = {}
 
+tables.draw_dashes_names = {
+    ['underground-mini-pump'] = true,
+    ['underground-mini-pump-t1'] = true,
+    ['underground-mini-pump-t2'] = true,
+    ['underground-mini-pump-t3'] = true,
+    ['4-to-4-pipe'] = true
+}
+
+do
+    local north = {
+        left = Position(-0.4, -0.75),
+        right = Position(0.4, -0.75),
+        rev_left = Position(-0.4, 0.75),
+        rev_right = Position(0.4, 0.75)
+    }
+    local east = {
+        left = -north.right:swap(),
+        right = -north.left:swap(),
+        rev_left = -north.rev_right:swap(),
+        rev_right = -north.rev_left:swap()
+    }
+    local south = {
+        left = -north.left,
+        right = -north.right,
+        rev_left = -north.rev_left,
+        rev_right = -north.rev_right
+    }
+    local west = {
+        left = -east.left,
+        right = -east.right,
+        rev_left = -east.rev_left,
+        rev_right = -east.rev_right
+    }
+    tables.ug_offsets = {
+        [defines.direction.north] = north,
+        [defines.direction.east] = east,
+        [defines.direction.south] = south,
+        [defines.direction.west] = west
+    }
+end
 
 tables.bitwise_marker_entry = {
     [0x00] = 1,
@@ -37,6 +78,12 @@ tables.allowed_types = {
     ['pipe'] = true,
     ['pipe-to-ground'] = true,
     ['pump'] = true
+}
+
+tables.not_allowed_names = {
+    ['factory-fluid-dummy-connector'] = true,
+    ['factory-fluid-dummy-connector-south'] = true,
+    ['offshore-pump-output'] = true
 }
 
 return tables
