@@ -109,6 +109,7 @@ local function place_clamped_pipe(entity, table_entry, player, lock_pipe, autocl
         new.fluidbox.set_filter(1, filter_table)
         local event = {
             created_entity = new,
+            entity = new,
             player_index = player.index,
             clamped = true,
             replaced_entity_unit_number = old_entity_unit_number
@@ -315,6 +316,7 @@ local function un_clamp_pipe(entity, player, area_unclamp)
     new.fluidbox.set_filter(1, filter_table)
     local event = {
         created_entity = new,
+        entity = new,
         player_index = player.index,
         clamped = true,
         replaced_entity_unit_number = old_entity_unit_number
