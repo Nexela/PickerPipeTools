@@ -395,7 +395,7 @@ if settings.startup['picker-tool-pipe-clamps'].value then
     Event.register({defines.events.on_player_selected_area, defines.events.on_player_alt_selected_area}, toggle_pipe_clamp)
     Event.register(defines.events.on_built_entity, on_built_entity)
     Event.register(defines.events.on_player_rotated_entity, on_player_rotated_entity)
-    Event.register('picker-auto-clamp-toggle', toggle_auto_clamp)
+    --Event.register('picker-auto-clamp-toggle', toggle_auto_clamp)
     commands.add_command('autoclamp', {'autoclamp-commands.toggle-autoclamp'}, toggle_auto_clamp)
 end
 --remote.add_interface(script.mod_name, require('__stdlib__/stdlib/scripts/interface'))

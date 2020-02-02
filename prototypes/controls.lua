@@ -12,12 +12,12 @@ data:extend{
         --linked_game_control = 'rotate',
         consuming = "script-only"
     },
-    {
-        type = "custom-input",
-        name = "picker-auto-clamp-toggle",
-        key_sequence = "CONTROL + SHIFT + C",
-        consuming = "script-only"
-    },
+    -- {
+    --     type = "custom-input",
+    --     name = "picker-auto-clamp-toggle",
+    --     key_sequence = "CONTROL + SHIFT + C",
+    --     consuming = "script-only"
+    -- },
     {
         type = "custom-input",
         name = "picker-auto-highlight-toggle",
