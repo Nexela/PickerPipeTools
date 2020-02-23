@@ -62,7 +62,7 @@ local function pipe_filter(event)
         player.opened = frame
     end
 end
-Event.register('picker-pipe-filter', pipe_filter)
+Event.on_event('picker-pipe-filter', pipe_filter)
 
 local function close_gui(event)
     local player = game.players[event.player_index]
@@ -71,7 +71,7 @@ local function close_gui(event)
         return gui.destroy()
     end
 end
-Event.register(defines.events.on_gui_closed, close_gui)
+Event.on_event(defines.events.on_gui_closed, close_gui)
 
 local function change_filter(event)
     local pipe = get_pipe(event.element.caption)
@@ -86,5 +86,4 @@ local function change_filter(event)
         pipe.fluidbox.set_filter(tonumber(event.element.parent.caption), filter)
     end
 end
-
 Gui.on_elem_changed('picker_pipe_element_filter', change_filter)

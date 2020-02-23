@@ -34,7 +34,7 @@ function utils.get_direction(entity_position, neighbour_position)
             local adx, ady = abs(delta_x), abs(delta_y)
             if adx > ady then
                 return utils.get_ew(delta_x)
-            else --? Exact diagonal relations get returned as a north/south relation.
+            else -- Exact diagonal relations get returned as a north/south relation.
                 return utils.get_ns(delta_y)
             end
         end

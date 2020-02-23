@@ -19,7 +19,8 @@ local base_entity = {
         direction_count = 1,
         shift = {-0.5,-0.6},
         filename = '__PickerPipeTools__/graphics/entity/markers/32x32highlightergood.png'
-    }
+    },
+    localised_name = "Picker Pipe (hidden)"
 }
 
 --[[local pipe_sprite_prototypes = {}

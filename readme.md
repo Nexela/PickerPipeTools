@@ -17,10 +17,9 @@ Highlights nearby underground belts and pipes that are not connected to anything
 
 ## Picker Pipe Cleaner
 
-Call a plumber on any fluidbox by using the selection tool in the blueprint menu. This will loop through all connected pipes and remove the selected fluid allowing your pipes to freely flow again.
+Call a plumber on any pipe by selecting it and pressing the default keybind of [SHIFT + DELTE]. This will loop through all connected fluidboxes and remove the selected fluid allowing your pipes to freely flow again.
 
 ![Picker Pipe Cleaner](https://github.com/Nexela/PickerAtheneum/raw/master/web/picker-pipe-cleaner.gif)
-![Picker Pipe Cleaner](https://thumbs.gfycat.com/DeadBigGrayling.webp)
 
 ## Picker Underground Pipe Highlighter
 
