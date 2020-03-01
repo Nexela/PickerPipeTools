@@ -13,13 +13,13 @@ Adds tools focused around ease of use when piping!
 
 Highlights nearby underground belts and pipes that are not connected to anything underground when hovering over belts or pipes. Can be disabled per player in mod options.
 
-![Picker Orphan finder](https://github.com/Nexela/PickerAtheneum/raw/master/web/picker-orphans.gif)
+![Picker Orphan finder](https://github.com/Nexela/PickerAtheneum/raw/master/.web/picker-orphans.gif)
 
 ## Picker Pipe Cleaner
 
 Call a plumber on any pipe by selecting it and pressing the default keybind of [SHIFT + DELTE]. This will loop through all connected fluidboxes and remove the selected fluid allowing your pipes to freely flow again.
 
-![Picker Pipe Cleaner](https://github.com/Nexela/PickerAtheneum/raw/master/web/picker-pipe-cleaner.gif)
+![Picker Pipe Cleaner](https://github.com/Nexela/PickerAtheneum/raw/master/.web/picker-pipe-cleaner.gif)
 
 ## Picker Underground Pipe Highlighter
 
