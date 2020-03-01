@@ -14,7 +14,7 @@
   "homepage": "",
   "description": "Adds tools to make fluid handling with pipes much better. -Orphan finder -Pipe cleaner (In Blueprint Menu) -Underground Pipe Highlighter Press <CTRL SHIFT P>(press again to toggle off) - Pipe Highlighter Verify connections by hovering over pipes. (Configurable in mod settings) -Pipe clamps Press <CTRL + R> on pipes, or use tool from Blueprint Menu (Like flow control but automatic) -Auto clamps (close proximity pipe laying without pipes connecting) toggle with /autoclamp or <CTRL SHIFT C> [Check mod startup settings for disabling certain parts of mod if you want QoL only]",
   "package": {
-    "ignore": ["makefile"],
+    "ignore": [],
     "scripts": {
       "datestamp": "../PickerAtheneum/.publish/datestamp.sh",
       "prepackage": "../PickerAtheneum/.publish/prepackage.sh",
