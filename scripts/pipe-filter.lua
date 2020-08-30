@@ -23,8 +23,9 @@ local function pipe_filter(event)
     local frame = player.gui.center[FRAME]
 
     if frame then
-        return frame.destroy()
+        frame.destroy()
     end
+    -- Todo Open/close Pipe sound
 
     local pipe = player.selected
     if pipe and pipe_types[pipe.type] then
