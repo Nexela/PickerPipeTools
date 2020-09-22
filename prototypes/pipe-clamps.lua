@@ -161,6 +161,42 @@ local function build_picture_table(current_picture_table, current_name)
     }
 end
 
+local function build_composite_icon(current_entity)
+    local new_icons = {}
+
+    if current_entity.icons then
+        -- Icons table, transcribe layers into new_icons, fully define the IconData
+        for _, icon_data in pairs(current_entity.icons) do
+            table.insert(new_icons, {
+                icon = icon_data.icon,
+                icon_size = icon_data.icon_size or current_entity.icon_size,
+                icon_mipmaps = icon_data.icon_mipmaps or current_entity.icon_mipmaps,
+                tint = icon_data.tint,
+                shift = icon_data.shift,
+                scale = icon_data.scale or 1,
+            })
+        end
+    else
+        -- Standard icon, convert to an icons definition
+        table.insert(new_icons, {
+            icon = current_entity.icon,
+            icon_size = current_entity.icon_size,
+            icon_mipmaps = current_entity.icon_mipmaps,
+            scale = 1
+        })
+    end
+
+    -- Append the clamped_layer
+    table.insert(new_icons, {
+        icon = '__PickerPipeTools__/graphics/icons/lock.png',
+        icon_size = 32,
+        icon_mipmaps = 1,
+        scale = new_icons[1].icon_size / 32,
+    })
+
+    return new_icons
+end
+
 if settings.startup['picker-tool-pipe-clamps'].value then
     local pipeEntities = {}
     for i, pipe in pairs(data.raw['pipe']) do
@@ -174,16 +210,7 @@ if settings.startup['picker-tool-pipe-clamps'].value then
                 current_entity.localised_name = {'pipe-tools.clamped-name', pipe.name, pipe_data.locale}
                 current_entity.placeable_by = {item = pipe.minable and pipe.minable.result or pipe.name, count = pipe.minable and pipe.minable.count or 1}
                 current_entity.underground_sprite = util.table.deepcopy(data.raw['pipe-to-ground']['pipe-to-ground'].underground_sprite)
-                current_entity.icons = {
-                    {
-                        icon = current_entity.icon or data.raw['pipe']['pipe'].icon,
-                        icon_size = 32
-                    },
-                    {
-                        icon = '__PickerPipeTools__/graphics/icons/lock.png',
-                        icon_size = 32
-                    }
-                }
+                current_entity.icons = build_composite_icon(current_entity)
                 current_entity.flags = {'placeable-neutral', 'player-creation', 'fast-replaceable-no-build-while-moving'}
                 current_entity.fluid_box.pipe_connections = pipe_data.positions
                 current_entity.fluid_box.pipe_covers = _G.pipecoverspictures()
