@@ -161,40 +161,61 @@ local function build_picture_table(current_picture_table, current_name)
     }
 end
 
-local function build_composite_icon(current_entity)
-    local new_icons = {}
+local function build_composite_icon(entity, layers_to_add, layer_shift, layer_scale)
+    local icon_layers = {}
 
-    if current_entity.icons then
-        -- Icons table, transcribe layers into new_icons, fully define the IconData
-        for _, icon_data in pairs(current_entity.icons) do
-            table.insert(new_icons, {
-                icon = icon_data.icon,
-                icon_size = icon_data.icon_size or current_entity.icon_size,
-                icon_mipmaps = icon_data.icon_mipmaps or current_entity.icon_mipmaps,
-                tint = icon_data.tint,
-                shift = icon_data.shift,
-                scale = icon_data.scale or 1,
-            })
+    if entity.icons then
+        for _, icon in pairs(entity.icons) do
+            local working_icon_size = icon.icon_size or entity.icon_size
+            icon_layers[#icon_layers+1] = {
+                icon = icon.icon,
+                icon_size = working_icon_size,
+                icon_mipmaps = icon.icon_mipmaps or entity.icon_mipmaps,
+                tint = icon.tint,
+                scale = icon.scale or (32 / working_icon_size),
+                shift = icon.shift,
+            }
         end
     else
-        -- Standard icon, convert to an icons definition
-        table.insert(new_icons, {
-            icon = current_entity.icon,
-            icon_size = current_entity.icon_size,
-            icon_mipmaps = current_entity.icon_mipmaps,
-            scale = 1
-        })
+        icon_layers = {
+            {
+                icon = entity.icon,
+                icon_size = entity.icon_size,
+                icon_mipmaps = entity.icon_mipmaps,
+                scale = (32 / entity.icon_size),
+            }
+        }
     end
 
-    -- Append the clamped_layer
-    table.insert(new_icons, {
-        icon = '__PickerPipeTools__/graphics/icons/lock.png',
-        icon_size = 32,
-        icon_mipmaps = 1,
-        scale = new_icons[1].icon_size / 32,
-    })
+    if layers_to_add[1] then
+        for _, layer_to_add in pairs(layers_to_add) do
+            icon_layers[#icon_layers+1] = {
+                icon = layer_to_add.icon,
+                icon_size = layer_to_add.icon_size,
+                icon_mipmaps = layer_to_add.icon_mipmaps,
+                tint = layer_to_add.tint,
+                scale = (layer_to_add.scale or (32 / layer_to_add.icon_size)) * (layer_scale or 1),
+                shift = {
+                    (layer_to_add.shift and (layer_to_add.shift[1] or layer_to_add.shift.x) or 0) * (layer_scale or 1) + (layer_shift and (layer_shift[1] or layer_shift.x) or 0),
+                    (layer_to_add.shift and (layer_to_add.shift[2] or layer_to_add.shift.y) or 0) * (layer_scale or 1) + (layer_shift and (layer_shift[2] or layer_shift.y) or 0),
+                }
+            }
+        end
+    else
+        icon_layers[#icon_layers+1] = {
+            icon = layers_to_add.icon,
+            icon_size = layers_to_add.icon_size,
+            icon_mipmaps = layers_to_add.icon_mipmaps,
+            tint = layers_to_add.tint,
+            scale = (layers_to_add.scale or (32 / layers_to_add.icon_size)) * (layer_scale or 1),
+            shift = {
+                (layers_to_add.shift and (layers_to_add.shift[1] or layers_to_add.shift.x) or 0) * (layer_scale or 1) + (layer_shift and (layer_shift[1] or layer_shift.x) or 0),
+                (layers_to_add.shift and (layers_to_add.shift[2] or layers_to_add.shift.y) or 0) * (layer_scale or 1) + (layer_shift and (layer_shift[2] or layer_shift.y) or 0),
+            }
+        }
+    end
 
-    return new_icons
+    return icon_layers
 end
 
 if settings.startup['picker-tool-pipe-clamps'].value then
@@ -210,7 +231,11 @@ if settings.startup['picker-tool-pipe-clamps'].value then
                 current_entity.localised_name = {'pipe-tools.clamped-name', pipe.name, pipe_data.locale}
                 current_entity.placeable_by = {item = pipe.minable and pipe.minable.result or pipe.name, count = pipe.minable and pipe.minable.count or 1}
                 current_entity.underground_sprite = util.table.deepcopy(data.raw['pipe-to-ground']['pipe-to-ground'].underground_sprite)
-                current_entity.icons = build_composite_icon(current_entity)
+                current_entity.icons = build_composite_icon(current_entity, {
+                    icon = '__PickerPipeTools__/graphics/icons/lock.png',
+                    icon_size = 32,
+                    icon_mipmaps = 1,
+                })
                 current_entity.flags = {'placeable-neutral', 'player-creation', 'fast-replaceable-no-build-while-moving'}
                 current_entity.fluid_box.pipe_connections = pipe_data.positions
                 current_entity.fluid_box.pipe_covers = _G.pipecoverspictures()
