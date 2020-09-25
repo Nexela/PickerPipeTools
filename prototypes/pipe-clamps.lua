@@ -167,13 +167,13 @@ local function build_composite_icon(entity, layers_to_add, layer_shift, layer_sc
     if entity.icons then
         for _, icon in pairs(entity.icons) do
             local working_icon_size = icon.icon_size or entity.icon_size
-            icon_layers[#icon_layers+1] = {
+            icon_layers[#icon_layers + 1] = {
                 icon = icon.icon,
                 icon_size = working_icon_size,
                 icon_mipmaps = icon.icon_mipmaps or entity.icon_mipmaps,
                 tint = icon.tint,
                 scale = icon.scale or (32 / working_icon_size),
-                shift = icon.shift,
+                shift = icon.shift
             }
         end
     else
@@ -182,14 +182,14 @@ local function build_composite_icon(entity, layers_to_add, layer_shift, layer_sc
                 icon = entity.icon,
                 icon_size = entity.icon_size,
                 icon_mipmaps = entity.icon_mipmaps,
-                scale = (32 / entity.icon_size),
+                scale = (32 / entity.icon_size)
             }
         }
     end
 
     if layers_to_add[1] then
         for _, layer_to_add in pairs(layers_to_add) do
-            icon_layers[#icon_layers+1] = {
+            icon_layers[#icon_layers + 1] = {
                 icon = layer_to_add.icon,
                 icon_size = layer_to_add.icon_size,
                 icon_mipmaps = layer_to_add.icon_mipmaps,
@@ -197,12 +197,12 @@ local function build_composite_icon(entity, layers_to_add, layer_shift, layer_sc
                 scale = (layer_to_add.scale or (32 / layer_to_add.icon_size)) * (layer_scale or 1),
                 shift = {
                     (layer_to_add.shift and (layer_to_add.shift[1] or layer_to_add.shift.x) or 0) * (layer_scale or 1) + (layer_shift and (layer_shift[1] or layer_shift.x) or 0),
-                    (layer_to_add.shift and (layer_to_add.shift[2] or layer_to_add.shift.y) or 0) * (layer_scale or 1) + (layer_shift and (layer_shift[2] or layer_shift.y) or 0),
+                    (layer_to_add.shift and (layer_to_add.shift[2] or layer_to_add.shift.y) or 0) * (layer_scale or 1) + (layer_shift and (layer_shift[2] or layer_shift.y) or 0)
                 }
             }
         end
     else
-        icon_layers[#icon_layers+1] = {
+        icon_layers[#icon_layers + 1] = {
             icon = layers_to_add.icon,
             icon_size = layers_to_add.icon_size,
             icon_mipmaps = layers_to_add.icon_mipmaps,
@@ -210,7 +210,7 @@ local function build_composite_icon(entity, layers_to_add, layer_shift, layer_sc
             scale = (layers_to_add.scale or (32 / layers_to_add.icon_size)) * (layer_scale or 1),
             shift = {
                 (layers_to_add.shift and (layers_to_add.shift[1] or layers_to_add.shift.x) or 0) * (layer_scale or 1) + (layer_shift and (layer_shift[1] or layer_shift.x) or 0),
-                (layers_to_add.shift and (layers_to_add.shift[2] or layers_to_add.shift.y) or 0) * (layer_scale or 1) + (layer_shift and (layer_shift[2] or layer_shift.y) or 0),
+                (layers_to_add.shift and (layers_to_add.shift[2] or layers_to_add.shift.y) or 0) * (layer_scale or 1) + (layer_shift and (layer_shift[2] or layer_shift.y) or 0)
             }
         }
     end
@@ -231,11 +231,15 @@ if settings.startup['picker-tool-pipe-clamps'].value then
                 current_entity.localised_name = {'pipe-tools.clamped-name', pipe.name, pipe_data.locale}
                 current_entity.placeable_by = {item = pipe.minable and pipe.minable.result or pipe.name, count = pipe.minable and pipe.minable.count or 1}
                 current_entity.underground_sprite = util.table.deepcopy(data.raw['pipe-to-ground']['pipe-to-ground'].underground_sprite)
-                current_entity.icons = build_composite_icon(current_entity, {
-                    icon = '__PickerPipeTools__/graphics/icons/lock.png',
-                    icon_size = 32,
-                    icon_mipmaps = 1,
-                })
+                current_entity.icons =
+                    build_composite_icon(
+                    current_entity,
+                    {
+                        icon = '__PickerPipeTools__/graphics/icons/lock.png',
+                        icon_size = 32,
+                        icon_mipmaps = 1
+                    }
+                )
                 current_entity.flags = {'placeable-neutral', 'player-creation', 'fast-replaceable-no-build-while-moving'}
                 current_entity.fluid_box.pipe_connections = pipe_data.positions
                 current_entity.fluid_box.pipe_covers = _G.pipecoverspictures()

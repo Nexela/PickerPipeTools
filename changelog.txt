@@ -3,6 +3,8 @@ Version: 1.1.2
 Date: ????
   Changes:
     - Pipe clamping defaults to off.
+  Bugfixes:
+    - Pipe clamp icons fixed.
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.1
 Date: 2020-04-30
