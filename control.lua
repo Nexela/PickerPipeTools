@@ -8,6 +8,7 @@ require('scripts/pipe-highlight/pipe-highlight')
 require('scripts/pipe-cleaner')
 require('scripts/pipe-clamps')
 require('scripts/pipe-filter')
+require('scripts/assembler-direction')
 --)) Load Scripts ((--
 
 remote.add_interface(script.mod_name, require('__stdlib__/stdlib/scripts/interface'))

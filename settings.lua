@@ -1,3 +1,5 @@
+require('settings/assembler-direction')
+
 data:extend{
     {
         type = 'bool-setting',
