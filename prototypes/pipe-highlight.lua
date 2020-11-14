@@ -222,6 +222,7 @@ for beam_type, marker_name in pairs(underground_marker_beam_table) do
             direction_count = 1
         }
     }
+    marker_beams.ground_light_animations = nil
     marker_beams.head_light = nil
     marker_beams.tail_light = nil
     marker_beams.body_light = nil
