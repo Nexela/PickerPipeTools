@@ -1,5 +1,3 @@
-require('settings/assembler-direction')
-
 data:extend{
     {
         type = 'bool-setting',
@@ -16,28 +14,10 @@ data:extend{
         order = 'tool-pipe-cleaner'
     },
     {
-        type = 'int-setting',
-        name = 'picker-max-checked-pipes',
-        setting_type = 'runtime-global',
-        minimum_value = 100,
-        maximum_value = 5000,
-        default_value = 250,
-        order = 'picker-b'
-    },
-    {
-        type = 'int-setting',
-        name = 'picker-max-distance-checked',
-        setting_type = 'runtime-global',
-        minimum_value = 50,
-        maximum_value = 500,
-        default_value = 80,
-        order = 'picker-b'
-    },
-    {
+        name = 'picker-assembler-direction',
         type = 'bool-setting',
-        name = 'picker-count-pipes-highlighted',
         setting_type = 'runtime-per-user',
-        default_value = false,
-        order = 'picker-b[find-orphans]-a'
-    },
+        default_value = true,
+        order = 'BeltTools-[picker-assembler-direction]-a'
+    }
 }
