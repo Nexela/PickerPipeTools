@@ -9,6 +9,7 @@
 local Event = require('__stdlib__/stdlib/event/event')
 local Player = require('__stdlib__/stdlib/event/player')
 local Position = require('__stdlib__/stdlib/area/position')
+local Time = require('__stdlib__/stdlib/utils/defines/time')
 
 -- Trigger orphan finder with these
 local check_for = {
@@ -60,7 +61,7 @@ local function find_orphans(event)
                     }
                 end
             end
-            pdata['next_check_' .. etype] = event.tick + (defines.time.second * 10)
+            pdata['next_check_' .. etype] = event.tick + (Time.second * 10)
         end
     end
 end
@@ -81,7 +82,7 @@ local function orphan_builder(event)
         else
             _destroy_mark(ents)
         end
-        pdata._next_check = event.tick + (defines.time.second * 2)
+        pdata._next_check = event.tick + (Time.second * 2)
     end
 end
 Event.register(defines.events.on_built_entity, orphan_builder)

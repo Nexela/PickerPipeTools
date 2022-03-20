@@ -223,14 +223,14 @@ if settings.startup['picker-tool-pipe-clamps'].value then
     for i, pipe in pairs(data.raw['pipe']) do
         for names, pipe_data in pairs(pipe_make_table) do
             if not pipe.clamped and not not_clampable(pipe.name) then
-                local current_entity = util.table.deepcopy(pipe)
+                local current_entity = table.deepcopy(pipe)
                 current_entity.type = 'pipe-to-ground'
                 current_entity.name = pipe.name .. '-clamped-' .. names
                 current_entity.clamped = true
                 current_entity.fast_replaceable_group = 'pipe'
                 current_entity.localised_name = {'pipe-tools.clamped-name', pipe.name, pipe_data.locale}
                 current_entity.placeable_by = {item = pipe.minable and pipe.minable.result or pipe.name, count = pipe.minable and pipe.minable.count or 1}
-                current_entity.underground_sprite = util.table.deepcopy(data.raw['pipe-to-ground']['pipe-to-ground'].underground_sprite)
+                current_entity.underground_sprite = table.deepcopy(data.raw['pipe-to-ground']['pipe-to-ground'].underground_sprite)
                 current_entity.icons =
                     build_composite_icon(
                     current_entity,
@@ -242,7 +242,7 @@ if settings.startup['picker-tool-pipe-clamps'].value then
                 )
                 current_entity.flags = {'placeable-neutral', 'player-creation', 'fast-replaceable-no-build-while-moving'}
                 current_entity.fluid_box.pipe_connections = pipe_data.positions
-                current_entity.fluid_box.pipe_covers = _G.pipecoverspictures()
+                current_entity.fluid_box.pipe_covers = _ENV.pipecoverspictures()
                 current_entity.pictures = build_picture_table(current_entity.pictures, names)
 
                 pipeEntities[#pipeEntities + 1] = current_entity
