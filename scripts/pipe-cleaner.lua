@@ -59,6 +59,7 @@ local function remove_graffiti(event)
     repeat
         local index, drain = next(entities)
         if index then
+            ---@cast drain -?
             rootered[index] = drain
             for i = 1, #drain do
                 drain.set_filter(i, nil)

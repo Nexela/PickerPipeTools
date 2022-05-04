@@ -11,7 +11,7 @@ local pipe_types = {
 local function get_pipe(stream)
     local _, x, y, surface_index = stream:match('^(%d+)_([%-%.0-9]+)_([%-%.0-9]+)_(%d+)')
     local pos = {x = x, y = y}
-    for i, ent in pairs(game.surfaces[tonumber(surface_index)].find_entities_filtered {position = pos}) do
+    for _, ent in pairs(game.surfaces[tonumber(surface_index)].find_entities_filtered {position = pos}) do
         if pipe_types[ent.type] then
             return ent
         end
