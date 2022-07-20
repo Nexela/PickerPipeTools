@@ -1,5 +1,4 @@
 local Event = require('__stdlib__/stdlib/event/event')
---local Position = require('__stdlib__/stdlib/area/position')
 local tables = {}
 
 tables.tick_options = {
@@ -12,7 +11,6 @@ tables.protected = {
     skip_valid = true
 }
 tables.empty = {}
-
 
 tables.bitwise_marker_entry = {
     [0x00] = 1,

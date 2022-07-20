@@ -10,8 +10,8 @@ local pipe_types = {
 
 local function get_pipe(stream)
     local _, x, y, surface_index = stream:match('^(%d+)_([%-%.0-9]+)_([%-%.0-9]+)_(%d+)')
-    local pos = {x = x, y = y}
-    for _, ent in pairs(game.surfaces[tonumber(surface_index)].find_entities_filtered {position = pos}) do
+    local pos = { x = x, y = y }
+    for _, ent in pairs(game.surfaces[tonumber(surface_index)].find_entities_filtered { position = pos }) do
         if pipe_types[ent.type] then
             return ent
         end
@@ -30,23 +30,23 @@ local function pipe_filter(event)
     local pipe = player.selected
     if pipe and pipe_types[pipe.type] then
         frame =
-            player.gui.center.add {
+        player.gui.center.add {
             type = 'frame',
             name = FRAME,
-            caption = {'', pipe.localised_name, ' ', pipe.unit_number}
+            caption = { '', pipe.localised_name, ' ', pipe.unit_number }
         }
         local t =
-            frame.add {
+        frame.add {
             type = 'table',
             name = 'boxes',
-            column_count = #pipe.fluidbox
+            column_count = #pipe.fluidbox --[[@as uint]]
         }
         local caption = pipe.unit_number .. '_' .. pipe.position.x .. '_' .. pipe.position.y .. '_' .. pipe.surface.index
         for i = 1, #pipe.fluidbox do
-            local filter = pipe.fluidbox.get_filter(i)
-            filter = filter and filter.name or nil
+            local filter = pipe.fluidbox.get_filter(i--[[@as uint]] ) --[[@as FluidBoxFilter?]] --@bug apidoc
+            local filter_name = filter and filter.name or nil
             local box_table =
-                t.add {
+            t.add {
                 type = 'table',
                 name = 'picker_pipe_box_index' .. i,
                 column_count = 1,
@@ -55,7 +55,7 @@ local function pipe_filter(event)
             box_table.add {
                 type = 'choose-elem-button',
                 elem_type = 'fluid',
-                fluid = filter,
+                fluid = filter_name,
                 name = 'picker_pipe_element_filter',
                 caption = caption
             }

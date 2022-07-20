@@ -1,7 +1,7 @@
-local north = {position = {0, -1}}
-local south = {position = {0, 1}}
-local west = {position = {-1, 0}}
-local east = {position = {1, 0}}
+local north = { position = { 0, -1 } }
+local south = { position = { 0, 1 } }
+local west = { position = { -1, 0 } }
+local east = { position = { 1, 0 } }
 
 local not_clampable = require('utils/not-clampable')
 
@@ -56,7 +56,7 @@ local clamped_layer = {
 local pipe_make_table = {
     ['single'] = {
         locale = '[Single]',
-        positions = {north},
+        positions = { north },
         pictures = {
             up = 'ending_up',
             left = 'ending_left',
@@ -66,7 +66,7 @@ local pipe_make_table = {
     },
     ['l'] = {
         locale = '[Elbow]',
-        positions = {north, west},
+        positions = { north, west },
         pictures = {
             up = 'corner_up_left',
             right = 'corner_up_right',
@@ -76,7 +76,7 @@ local pipe_make_table = {
     },
     ['i'] = {
         locale = '[Straight]',
-        positions = {north, south},
+        positions = { north, south },
         pictures = {
             up = 'straight_vertical',
             right = 'straight_horizontal',
@@ -86,7 +86,7 @@ local pipe_make_table = {
     },
     ['t'] = {
         locale = '[T junction]',
-        positions = {north, east, west},
+        positions = { north, east, west },
         pictures = {
             up = 't_up',
             right = 't_right',
@@ -96,7 +96,7 @@ local pipe_make_table = {
     },
     ['x'] = {
         locale = '[Cross junction]',
-        positions = {north, east, south, west},
+        positions = { north, east, south, west },
         pictures = {
             up = 'cross',
             right = 'cross',
@@ -196,8 +196,10 @@ local function build_composite_icon(entity, layers_to_add, layer_shift, layer_sc
                 tint = layer_to_add.tint,
                 scale = (layer_to_add.scale or (32 / layer_to_add.icon_size)) * (layer_scale or 1),
                 shift = {
-                    (layer_to_add.shift and (layer_to_add.shift[1] or layer_to_add.shift.x) or 0) * (layer_scale or 1) + (layer_shift and (layer_shift[1] or layer_shift.x) or 0),
-                    (layer_to_add.shift and (layer_to_add.shift[2] or layer_to_add.shift.y) or 0) * (layer_scale or 1) + (layer_shift and (layer_shift[2] or layer_shift.y) or 0)
+                    (layer_to_add.shift and (layer_to_add.shift[1] or layer_to_add.shift.x) or 0) * (layer_scale or 1) +
+                        (layer_shift and (layer_shift[1] or layer_shift.x) or 0),
+                    (layer_to_add.shift and (layer_to_add.shift[2] or layer_to_add.shift.y) or 0) * (layer_scale or 1) +
+                        (layer_shift and (layer_shift[2] or layer_shift.y) or 0)
                 }
             }
         end
@@ -209,8 +211,10 @@ local function build_composite_icon(entity, layers_to_add, layer_shift, layer_sc
             tint = layers_to_add.tint,
             scale = (layers_to_add.scale or (32 / layers_to_add.icon_size)) * (layer_scale or 1),
             shift = {
-                (layers_to_add.shift and (layers_to_add.shift[1] or layers_to_add.shift.x) or 0) * (layer_scale or 1) + (layer_shift and (layer_shift[1] or layer_shift.x) or 0),
-                (layers_to_add.shift and (layers_to_add.shift[2] or layers_to_add.shift.y) or 0) * (layer_scale or 1) + (layer_shift and (layer_shift[2] or layer_shift.y) or 0)
+                (layers_to_add.shift and (layers_to_add.shift[1] or layers_to_add.shift.x) or 0) * (layer_scale or 1) +
+                    (layer_shift and (layer_shift[1] or layer_shift.x) or 0),
+                (layers_to_add.shift and (layers_to_add.shift[2] or layers_to_add.shift.y) or 0) * (layer_scale or 1) +
+                    (layer_shift and (layer_shift[2] or layer_shift.y) or 0)
             }
         }
     end
@@ -228,11 +232,11 @@ if settings.startup['picker-tool-pipe-clamps'].value then
                 current_entity.name = pipe.name .. '-clamped-' .. names
                 current_entity.clamped = true
                 current_entity.fast_replaceable_group = 'pipe'
-                current_entity.localised_name = {'pipe-tools.clamped-name', pipe.name, pipe_data.locale}
-                current_entity.placeable_by = {item = pipe.minable and pipe.minable.result or pipe.name, count = pipe.minable and pipe.minable.count or 1}
+                current_entity.localised_name = { 'pipe-tools.clamped-name', pipe.name, pipe_data.locale }
+                current_entity.placeable_by = { item = pipe.minable and pipe.minable.result or pipe.name, count = pipe.minable and pipe.minable.count or 1 }
                 current_entity.underground_sprite = table.deepcopy(data.raw['pipe-to-ground']['pipe-to-ground'].underground_sprite)
                 current_entity.icons =
-                    build_composite_icon(
+                build_composite_icon(
                     current_entity,
                     {
                         icon = '__PickerPipeTools__/graphics/icons/lock.png',
@@ -240,7 +244,7 @@ if settings.startup['picker-tool-pipe-clamps'].value then
                         icon_mipmaps = 1
                     }
                 )
-                current_entity.flags = {'placeable-neutral', 'player-creation', 'fast-replaceable-no-build-while-moving'}
+                current_entity.flags = { 'placeable-neutral', 'player-creation', 'fast-replaceable-no-build-while-moving' }
                 current_entity.fluid_box.pipe_connections = pipe_data.positions
                 current_entity.fluid_box.pipe_covers = _ENV.pipecoverspictures()
                 current_entity.pictures = build_picture_table(current_entity.pictures, names)

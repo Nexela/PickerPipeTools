@@ -16,19 +16,19 @@ local function flush(event)
     end
 
     if not (player.admin or not settings.global['picker-tool-admin-only'].value) then
-        return player.print({'picker.must-be-admin'})
+        return player.print { 'picker.must-be-admin' }
     end
 
     if fluidbox then
         for i = 1, #fluidbox do
-            fluidbox.flush(i)
+            fluidbox.flush(i--[[@as uint]] )
         end
         fluidbox.owner.last_user = player
     end
 end
 Event.register('picker-pipe-cleaner', flush)
 
---API request flush_filters
+---@api request flush_filters
 local function remove_graffiti(event)
     local player = game.players[event.player_index]
     local entity = player.selected
@@ -39,7 +39,7 @@ local function remove_graffiti(event)
     end
 
     if not (player.admin or not settings.global['picker-tool-admin-only'].value) then
-        return player.print({'picker.must-be-admin'})
+        return player.print { 'picker.must-be-admin' }
     end
 
     local frame = player.gui.center.picker_pipe_filter
@@ -70,6 +70,6 @@ local function remove_graffiti(event)
             drain.owner.last_user = player
         end
     until not index
-    player.print({'pipe-cleaner.remove-all-filters'})
+    player.print { 'pipe-cleaner.remove-all-filters' }
 end
 Event.register('picker-filter-cleaner', remove_graffiti)

@@ -1,7 +1,7 @@
 local utils = {}
 
-utils.truthy = {['on'] = true, ['true'] = true}
-utils.falsey = {['off'] = true, ['false'] = true}
+utils.truthy = { ['on'] = true, ['true'] = true }
+utils.falsey = { ['off'] = true, ['false'] = true }
 
 local ev = defines.events
 utils.selection_tool_event = {
@@ -10,9 +10,9 @@ utils.selection_tool_event = {
 }
 
 utils.color = {
-    yellow = {r = 1, g = 1},
-    green = {g = 1},
-    red = {r = 1}
+    yellow = { r = 1, g = 1 },
+    green = { g = 1 },
+    red = { r = 1 }
 }
 
 function utils.get_ew(deltaX)
