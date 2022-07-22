@@ -223,11 +223,11 @@ local function build_composite_icon(entity, layers_to_add, layer_shift, layer_sc
 end
 
 if settings.startup['picker-tool-pipe-clamps'].value then
-    local pipeEntities = {}
+    local pipeEntities = {} ---@type PickerPipeTools.PipeToGround[]
     for i, pipe in pairs(data.raw['pipe']) do
         for names, pipe_data in pairs(pipe_make_table) do
             if not pipe.clamped and not not_clampable(pipe.name) then
-                local current_entity = table.deepcopy(pipe)
+                local current_entity = table.deepcopy(pipe) --[[@as PickerPipeTools.PipeToGround]]
                 current_entity.type = 'pipe-to-ground'
                 current_entity.name = pipe.name .. '-clamped-' .. names
                 current_entity.clamped = true
@@ -256,3 +256,8 @@ if settings.startup['picker-tool-pipe-clamps'].value then
 
     data:extend(pipeEntities)
 end
+
+---@class Prototype.Pipe
+---@field clamped boolean
+
+---@class PickerPipeTools.PipeToGround: Prototype.PipeToGround
